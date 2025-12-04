@@ -1,0 +1,57 @@
+name: Shared CI Logic
+
+on:
+  workflow_call:
+    inputs:
+      test-path:
+        required: true
+        type: string
+        default: "tests"
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    container:
+      # YOUR CUSTOM IMAGE
+      image: ghcr.io/nrfmodule/nrfmodule-dev-manifest:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    steps:
+      - name: Checkout Code (The PR Code)
+        uses: actions/checkout@v4
+        with:
+          path: pr_code
+
+      - name: Initialize West Workspace
+        run: |
+          mkdir workspace
+          cd workspace
+          
+          # 1. Initialize with your manifest
+          west init -m https://github.com/V1incentC/test-premium-manifest
+          
+          # 2. Download everything (NCS v3.1.1 + Your Libs)
+          west update
+
+          # 3. THE SWAP (Use the code from the Pull Request)
+          rm -rf modules/lib/test-modem-source
+          mv $GITHUB_WORKSPACE/pr_code modules/lib/test-modem-source
+
+      - name: Run Twister
+        working-directory: workspace
+        run: |
+          # Let Twister decide based on testcase.yaml
+          west twister \
+            -T modules/lib/test-modem-source/${{ inputs.test-path }} \
+            --integration \
+            --outdir /tmp/twister-out \
+            --clobber
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twister-report
+          path: /tmp/twister-out/

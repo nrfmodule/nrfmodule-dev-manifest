@@ -1,0 +1,68 @@
+name: Reusable Firmware Build
+
+on:
+  workflow_call:
+    inputs:
+      board:
+        required: true
+        type: string
+      app-dir:
+        required: false
+        type: string
+        default: "application" 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      # Use your custom image
+      image: ghcr.io/nrfmodule/nrfmodule-dev-manifest:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    steps:
+      - name: Checkout App
+        uses: actions/checkout@v3
+        with:
+          # Check out the calling repo (Product A) into the folder specified
+          path: ${{ inputs.app-dir }}
+
+      - name: Initialize Workspace
+        run: |
+          mkdir workspace
+          cd workspace
+          
+          # Initialize from the App's own manifest (Bootstrap)
+          # We point to the folder where we checked out the code
+          west init -l ../${{ inputs.app-dir }}
+          
+          # Download SDK + Libraries (as defined in premium manifest)
+          west update
+
+      - name: Build Firmware
+        working-directory: workspace
+        run: |
+          west build -b ${{ inputs.board }} ../${{ inputs.app-dir }}
+
+      # --- Sanitize the Name ---
+      - name: Generate Safe Artifact Name
+        id: safe-name
+        run: |
+          # Replace all slashes '/' with underscores '_'
+          # Input: nrf9160dk/nrf9160/ns -> Output: nrf9160dk_nrf9160_ns
+          SAFE_BOARD=$(echo "${{ inputs.board }}" | tr '/' '_')
+          echo "board=$SAFE_BOARD" >> $GITHUB_OUTPUT
+
+      # --- Use the Safe Name ---
+      - name: Save Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          # Use the sanitized output from the previous step
+          name: firmware-${{ steps.safe-name.outputs.board }}
+          if-no-files-found: warn
+          path: |
+            workspace/build/**/*.hex
+            workspace/build/**/*.bin
+            workspace/build/**/*.zip
+            workspace/build/**/*.elf

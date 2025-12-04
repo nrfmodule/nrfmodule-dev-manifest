@@ -1,0 +1,33 @@
+manifest:
+  remotes:
+    - name: ncs
+      url-base: https://github.com/nrfconnect
+    - name: nrfmodule
+      url-base: https://github.com/nrfmodule
+
+  projects:
+    # 1. DEFINE THE OS HERE (The Boss)
+    # Since this is listed first/explicitly, it overrides whatever the library says.
+    - name: sdk-nrf
+      remote: ncs
+      path: nrf
+      revision: v3.1.1
+      import: true
+
+    # 2. The Public SDK
+    - name: nrfmodule-sdk
+      remote: nrfmodule
+      path: modules/lib/nrfmodule-sdk
+      revision: main
+      # We still import it to get its dependencies (if any), 
+      # but its definition of 'sdk-nrf' will be IGNORED because we defined it above.
+      import: true 
+
+    # 3. The Private Source
+    - name: nrfmodule-core
+      remote: nrfmodule
+      path: modules/lib/nrfmodule-core
+      revision: main
+
+  self:
+    path: config/manifest
