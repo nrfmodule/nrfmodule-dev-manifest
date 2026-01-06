@@ -11,10 +11,16 @@ manifest:
     - name: sdk-nrf
       remote: ncs
       path: nrf
-      revision: v3.1.1
+      revision: v3.2.1
       import: true
 
-    # 2. The Public SDK
+    # 2. The Serial Modem (New Dependency)
+    - name: ncs-serial-modem
+      remote: ncs
+      path: ncs-serial-modem
+      revision: main
+
+    # 3. The Public SDK
     - name: nrfmodule-sdk
       remote: nrfmodule
       path: modules/lib/nrfmodule-sdk
@@ -23,7 +29,7 @@ manifest:
       # but its definition of 'sdk-nrf' will be IGNORED because we defined it above.
       import: true 
 
-    # 3. The Private Source
+    # 4. The Private Source
     - name: nrfmodule-core
       remote: nrfmodule
       path: modules/lib/nrfmodule-core
