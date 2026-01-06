@@ -33,7 +33,7 @@ manifest:
     - name: nrfmodule-core
       remote: nrfmodule
       path: modules/lib/nrfmodule-core
-      revision: main
+      revision: feature/serial-modem-v3.2
 
   self:
     path: config/manifest
