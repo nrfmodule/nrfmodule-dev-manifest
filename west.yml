@@ -20,20 +20,20 @@ manifest:
       path: ncs-serial-modem
       revision: main
 
-    # 3. The Public SDK
+    # 3. The Public SDK (use main for latest, or pin to version tag)
     - name: nrfmodule-sdk
       remote: nrfmodule
       path: modules/lib/nrfmodule-sdk
-      revision: main
+      revision: main  # Or use 'v2.0.0' to pin, or 'v1.x' for NCS 3.1.x support
       # We still import it to get its dependencies (if any), 
       # but its definition of 'sdk-nrf' will be IGNORED because we defined it above.
       import: true 
 
-    # 4. The Private Source
+    # 4. The Private Source (for development, tracks SDK version)
     - name: nrfmodule-core
       remote: nrfmodule
       path: modules/lib/nrfmodule-core
-      revision: feature/serial-modem-v3.2
+      revision: main  # Or use 'v2.0.0' to pin, or 'v1.x' for NCS 3.1.x support
 
   self:
     path: config/manifest

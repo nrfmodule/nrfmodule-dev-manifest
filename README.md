@@ -78,8 +78,107 @@ To run your code, you need an application.
 | **`nrfmodule-sdk`** | **The Face** | Public headers and binary distribution. |
 | **`nrfmodule-product-template`** | **The Body** | Reference application to run and test the code. |
 
-## 5. CI/CD & Docker
+## 5. Version Management & Release Workflow
+
+We use **semantic versioning** independent of NCS versions. This gives us our own identity while clearly documenting compatibility.
+
+### Version Strategy
+
+| nRFModule Version | NCS Version | Branch | Status |
+|-------------------|-------------|--------|--------|
+| **v2.x** | **3.2.x** | `main` | ✅ **Active Development** |
+| v1.x | 3.1.x | `v1.x` | 🔧 Maintenance Only |
+
+### Branch Workflow
+
+```
+main                    ← Latest stable (currently v2.x for NCS 3.2.x)
+  ├─ v1.x              ← Maintenance branch (NCS 3.1.x)
+  └─ feature/*         ← Short-lived feature branches
+```
+
+### Creating a Release
+
+1. **Feature Development:**
+   ```bash
+   git checkout -b feature/my-feature
+   # Make changes, commit
+   git push -u nrfmodule feature/my-feature
+   # Open PR to main
+   ```
+
+2. **Bug Fixes:**
+   ```bash
+   git checkout -b fix/issue-123
+   # Make fixes, commit
+   git push -u nrfmodule fix/issue-123
+   # PR to main → tagged as v2.0.1 (patch)
+   ```
+
+3. **Release Tagging:**
+   ```bash
+   # After merging to main
+   git checkout main
+   git pull
+   
+   # Tag both repositories with same version
+   cd modules/lib/nrfmodule-core
+   git tag -a v2.1.0 -m "Release v2.1.0: Description"
+   git push nrfmodule v2.1.0
+   
+   cd ../nrfmodule-sdk
+   git tag -a v2.1.0 -m "Release v2.1.0: Description"
+   git push nrfmodule v2.1.0
+   ```
+
+4. **Updating This Manifest:**
+   Update `west.yml` to reflect the new stable version if needed (or keep on `main`).
+
+### Porting to New NCS Version
+
+When Nordic releases a new NCS version:
+
+1. Create `feature/ncs-vX.X-port` branch
+2. Follow [nrfmodule-core/docs/NCS_PORTING_GUIDE.md](https://github.com/nrfmodule/nrfmodule-core/blob/main/docs/NCS_PORTING_GUIDE.md)
+3. Decide on version bump:
+   - **Patch (v2.0.1):** Bug fixes only
+   - **Minor (v2.1.0):** New features, backward compatible
+   - **Major (v3.0.0):** Breaking changes
+4. Merge to `main` and tag
+5. Update this manifest's `west.yml` to new NCS version
+
+### Customer Usage
+
+Customers pin to stable versions in their `west.yml`:
+
+```yaml
+manifest:
+  projects:
+    - name: nrfmodule-sdk
+      url: https://github.com/nrfmodule/nrfmodule-sdk
+      revision: v2.0.0  # Pin to specific version
+      # OR
+      revision: main    # Latest patches for v2.x
+      # OR
+      revision: v1.x    # Legacy NCS 3.1.x support
+```
+
+## 6. CI/CD & Docker
 
 This repository hosts the Docker image used by our CI pipelines.
 *   **Image:** `ghcr.io/nrfmodule/nrfmodule-dev-manifest:latest`
 *   **Trigger:** Modifying files in `infra/docker/` will trigger a rebuild of the image (takes ~15 mins).
+
+## 7. FAQ
+
+**Q: Should I work on `main` or a feature branch?**  
+A: Always create a feature branch. Never commit directly to `main`.
+
+**Q: Which version should customers use?**  
+A: For new projects on NCS 3.2.x, use `v2.0.0` or `main`. For NCS 3.1.x, use `v1.x`.
+
+**Q: How do I backport a fix to v1.x?**  
+A: Cherry-pick the commit to the `v1.x` branch and tag as v1.0.1, v1.0.2, etc.
+
+**Q: Do I need to tag both core and SDK with the same version?**  
+A: Yes! Keep versions synchronized across both repositories for clarity.
