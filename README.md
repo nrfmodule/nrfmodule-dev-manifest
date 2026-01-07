@@ -84,18 +84,24 @@ We use **semantic versioning** independent of NCS versions. This gives us our ow
 
 ### Version Strategy
 
-| nRFModule Version | NCS Version | Branch | Status |
-|-------------------|-------------|--------|--------|
-| **v2.x** | **3.2.x** | `main` | ✅ **Active Development** |
+| nRFModule Version | NCS Version | Branches | Status |
+|-------------------|-------------|----------|--------|
+| **v2.x** | **3.2.x** | `main`, `v2.x` | ✅ **Active Development** |
 | v1.x | 3.1.x | `v1.x` | 🔧 Maintenance Only |
 
 ### Branch Workflow
 
 ```
-main                    ← Latest stable (currently v2.x for NCS 3.2.x)
-  ├─ v1.x              ← Maintenance branch (NCS 3.1.x)
+main                    ← Latest stable across all versions
+  ├─ v2.x              ← v2.x series (NCS 3.2.x) - receives patches as v2.0.1, v2.1.0, etc.
+  ├─ v1.x              ← v1.x series (NCS 3.1.x) - maintenance only
   └─ feature/*         ← Short-lived feature branches
 ```
+
+**Branch Purpose:**
+- `main` - Always points to the latest stable release (currently v2.x)
+- `v2.x` - Stable branch for v2 series, receives patch/minor releases (v2.0.1, v2.1.0, etc.)
+- `v1.x` - Stable branch for v1 series (legacy), only critical fixes
 
 ### Creating a Release
 
@@ -149,19 +155,25 @@ When Nordic releases a new NCS version:
 
 ### Customer Usage
 
-Customers pin to stable versions in their `west.yml`:
+Customers can choose their tracking strategy in `west.yml`:
 
 ```yaml
 manifest:
   projects:
     - name: nrfmodule-sdk
       url: https://github.com/nrfmodule/nrfmodule-sdk
-      revision: v2.0.0  # Pin to specific version
+      # Choose one of these revision strategies:
+      
+      revision: v2.0.0  # 1. Pin to specific release (most stable, recommended for production)
       # OR
-      revision: main    # Latest patches for v2.x
+      revision: v2.x    # 2. Track v2.x series (get patch/minor updates automatically)
       # OR
-      revision: v1.x    # Legacy NCS 3.1.x support
+      revision: main    # 3. Always latest stable (get major updates automatically)
+      # OR
+      revision: v1.x    # 4. Legacy NCS 3.1.x support (maintenance only)
 ```
+
+**Recommendation:** Use `v2.x` for active development to get bug fixes automatically, then pin to specific tag (e.g., `v2.0.0`) before production release.
 
 ## 6. CI/CD & Docker
 
