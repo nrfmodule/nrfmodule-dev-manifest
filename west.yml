@@ -24,7 +24,7 @@ manifest:
     - name: nrfmodule-sdk
       remote: nrfmodule
       path: modules/lib/nrfmodule-sdk
-      revision: v2.x  # Track v2.x series for patches, or use 'v2.0.0' to pin, 'main' for latest, or 'v1.x' for NCS 3.1.x
+      revision: v2.1.0  # Pinned release. Use 'v2.x' to track patches, 'main' for latest dev, 'v1.x' for NCS 3.1.x
       # We still import it to get its dependencies (if any), 
       # but its definition of 'sdk-nrf' will be IGNORED because we defined it above.
       import: true 
@@ -33,7 +33,7 @@ manifest:
     - name: nrfmodule-core
       remote: nrfmodule
       path: modules/lib/nrfmodule-core
-      revision: v2.x  # Track v2.x series for patches, or use 'v2.0.0' to pin, 'main' for latest, or 'v1.x' for NCS 3.1.x
+      revision: v2.1.0  # Pinned release. Use 'v2.x' to track patches, 'main' for latest dev, 'v1.x' for NCS 3.1.x
 
   self:
     path: config/manifest
