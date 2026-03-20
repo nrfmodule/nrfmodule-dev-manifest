@@ -24,16 +24,16 @@ manifest:
     - name: nrfmodule-sdk
       remote: nrfmodule
       path: modules/lib/nrfmodule-sdk
-      revision: v2.x  # Track v2.x branch for development. Pin to specific tag (e.g., v2.1.1) for releases.
-      # We still import it to get its dependencies (if any), 
+      revision: main  # Latest development. Customers: use a tagged revision (e.g., v2.1.1)
+      # We still import it to get its dependencies (if any),
       # but its definition of 'sdk-nrf' will be IGNORED because we defined it above.
-      import: true 
+      import: true
 
     # 4. The Private Source (for development, tracks SDK version)
     - name: nrfmodule-core
       remote: nrfmodule
       path: modules/lib/nrfmodule-core
-      revision: v2.x  # Track v2.x branch for development. Pin to specific tag (e.g., v2.1.0) for releases.
+      revision: main  # Latest development. Customers: use a tagged revision (e.g., v2.1.0)
 
   self:
     path: config/manifest
