@@ -24,7 +24,7 @@ manifest:
     - name: nrfmodule-sdk
       remote: nrfmodule
       path: modules/lib/nrfmodule-sdk
-      revision: main  # Latest development. Customers: use a tagged revision (e.g., v2.1.1)
+      revision: v2.2.0
       # We still import it to get its dependencies (if any),
       # but its definition of 'sdk-nrf' will be IGNORED because we defined it above.
       import: true
@@ -33,7 +33,7 @@ manifest:
     - name: nrfmodule-core
       remote: nrfmodule
       path: modules/lib/nrfmodule-core
-      revision: main  # Latest development. Customers: use a tagged revision (e.g., v2.1.0)
+      revision: v2.2.0
 
   self:
     path: config/manifest
