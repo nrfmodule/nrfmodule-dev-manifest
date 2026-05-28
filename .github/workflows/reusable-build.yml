@@ -23,10 +23,10 @@ jobs:
     
     steps:
       - name: Checkout App
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          # Check out the calling repo (Product A) into the folder specified
           path: ${{ inputs.app-dir }}
+          fetch-depth: 0
 
       - name: Initialize Workspace
         run: |
