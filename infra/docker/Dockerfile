@@ -54,7 +54,8 @@ RUN wget -qO - https://nsscprodmedia.blob.core.windows.net/prod/software-and-oth
 
 # 4. Initialize West and Install Python Requirements for NCS v3.2.1
 WORKDIR /workdir
-RUN pip3 install west \
+RUN pip3 install --upgrade pip setuptools wheel \
+    && pip3 install west \
     && west init -m https://github.com/nrfconnect/sdk-nrf --mr v3.2.1 \
     && west update --narrow -o=--depth=1 \
     && pip3 install -r zephyr/scripts/requirements.txt \
