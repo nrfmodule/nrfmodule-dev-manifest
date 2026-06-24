@@ -1,0 +1,63 @@
+name: Shared Lint
+
+# Reusable code-quality gate. Product repos call this from a tiny wrapper:
+#
+#   jobs:
+#     lint:
+#       uses: nrfmodule/nrfmodule-dev-manifest/.github/workflows/reusable-lint.yml@main
+#       secrets: inherit
+#
+# Enforces the house-style rule checks (tooling/checks) and prints clang-format
+# drift as advisory (never fails the gate, never reformats).
+
+on:
+  workflow_call:
+    inputs:
+      ref-range:
+        description: "Optional git range to scan (default: PR base..HEAD, else --all)."
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/nrfmodule/nrfmodule-dev-manifest:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          path: repo
+          fetch-depth: 0   # full history so --range can diff against the base
+
+      - name: Checkout tooling (manifest repo)
+        uses: actions/checkout@v4
+        with:
+          repository: nrfmodule/nrfmodule-dev-manifest
+          path: manifest
+
+      - name: Install clang-format (advisory checker)
+        run: pip3 install --quiet clang-format
+
+      - name: Run quality gate
+        working-directory: repo
+        env:
+          NRFMODULE_TOOLING: ${{ github.workspace }}/manifest/tooling
+          CLANG_FORMAT_VERBOSE: "1"
+        run: |
+          range="${{ inputs.ref-range }}"
+          if [ -z "$range" ] && [ -n "${{ github.event.pull_request.base.sha }}" ]; then
+            range="${{ github.event.pull_request.base.sha }}..HEAD"
+          fi
+          if [ -n "$range" ]; then
+            echo "Scanning range: $range"
+            bash "$NRFMODULE_TOOLING/check.sh" --range "$range"
+          else
+            echo "No range; scanning all tracked C/C++ files."
+            bash "$NRFMODULE_TOOLING/check.sh" --all
+          fi

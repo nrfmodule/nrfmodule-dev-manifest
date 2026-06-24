@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# nrfmodule pre-commit hook — run the quality gate on staged C/C++ files.
+# Installed via tooling/install-hooks.sh (sets core.hooksPath). Bypass with
+# `git commit --no-verify` (CI is the real gate).
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec bash "$HOOK_DIR/../check.sh"
