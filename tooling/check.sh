@@ -35,6 +35,9 @@ fi
 # --- collect target files ----------------------------------------------------
 is_src() { case "$1" in *.c|*.h|*.cpp|*.hpp|*.cc) return 0 ;; *) return 1 ;; esac; }
 
+mode="${1:-}"
+range="${2:-}"
+
 declare -a files=()
 case "${1:-}" in
 	--all)
@@ -91,6 +94,13 @@ if [ -n "$CLANG_FORMAT" ]; then
 	done
 	[ "$cf_n" -gt 0 ] && echo "  ($cf_n file(s) — inspect: clang-format --style=file:$STYLE_FILE <file>)"
 fi
+
+# --- 2b. added-comments — ADVISORY (diff-based: staged or range only) --------
+# Surfaces net-new comment lines so rationale gets moved to the commit message.
+case "$mode" in
+	"")      git diff --cached  | bash "$CHECKS_DIR/added-comments.sh" ;;
+	--range) git diff "$range"  | bash "$CHECKS_DIR/added-comments.sh" ;;
+esac
 
 # --- 3. checkpatch (advisory; opt-in) ----------------------------------------
 if [ "${RUN_CHECKPATCH:-0}" = "1" ] && [ -n "${CHECKPATCH:-}" ]; then
