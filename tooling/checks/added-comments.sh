@@ -16,7 +16,9 @@ out=$(awk '
 	/^-/        { next }
 	/^\+/ {
 		c = substr($0, 2); t = c; sub(/^[ \t]+/, "", t)
-		if (t ~ /^(\/\/|\/\*|\*)/ && t !~ /style:no-paren/ && t !~ /SPDX-License/) {
+		# A leading `*` is a block-comment continuation only when followed by
+		# space/tab/slash or end — not `*out`/`*ptr` (pointer code).
+		if (t ~ /^(\/\/|\/\*|\*[ \t\/]|\*$)/ && t !~ /style:no-paren/ && t !~ /SPDX-License/) {
 			printf("    %s:%d:%s\n", f, ln, c)
 		}
 		ln++; next
