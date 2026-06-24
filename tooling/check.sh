@@ -47,6 +47,11 @@ case "${1:-}" in
 	"")
 		while IFS= read -r f; do is_src "$f" && [ -f "$f" ] && files+=("$f"); done \
 			< <(git diff --cached --name-only --diff-filter=d) ;;
+	--*)
+		# An unknown flag must not be silently treated as a (missing) file and
+		# pass the gate — fail loudly so a typo'd --range/--all is caught.
+		echo "check.sh: unknown option '$1' (expected --all, --range <A>..<B>, or file...)"
+		exit 2 ;;
 	*)
 		for f in "$@"; do is_src "$f" && [ -f "$f" ] && files+=("$f"); done ;;
 esac

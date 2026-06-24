@@ -49,10 +49,14 @@ jobs:
         env:
           NRFMODULE_TOOLING: ${{ github.workspace }}/manifest/tooling
           CLANG_FORMAT_VERBOSE: "1"
+          # Pass caller/GitHub-controlled strings via env, never interpolated into
+          # the script body — otherwise a crafted ref-range is shell injection.
+          REF_RANGE: ${{ inputs.ref-range }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          range="${{ inputs.ref-range }}"
-          if [ -z "$range" ] && [ -n "${{ github.event.pull_request.base.sha }}" ]; then
-            range="${{ github.event.pull_request.base.sha }}..HEAD"
+          range="$REF_RANGE"
+          if [ -z "$range" ] && [ -n "$BASE_SHA" ]; then
+            range="$BASE_SHA..HEAD"
           fi
           if [ -n "$range" ]; then
             echo "Scanning range: $range"
