@@ -28,23 +28,24 @@ jobs:
         run: |
           mkdir workspace
           cd workspace
-          
-          # 1. Initialize with your manifest
-          west init -m https://github.com/V1incentC/test-premium-manifest
-          
-          # 2. Download everything (NCS v3.1.1 + Your Libs)
+
+          # 1. Initialize with the platform manifest (NCS v3.2.1 + platform libs)
+          west init -m https://github.com/nrfmodule/nrfmodule-dev-manifest
+
+          # 2. Skip the private core repo: the PR checkout replaces it below
+          west config manifest.project-filter -- "-nrfmodule-core"
           west update
 
-          # 3. THE SWAP (Use the code from the Pull Request)
-          rm -rf modules/lib/test-modem-source
-          mv $GITHUB_WORKSPACE/pr_code modules/lib/test-modem-source
+          # 3. THE SWAP (use the code from the Pull Request)
+          rm -rf modules/lib/nrfmodule-core
+          mv $GITHUB_WORKSPACE/pr_code modules/lib/nrfmodule-core
 
       - name: Run Twister
         working-directory: workspace
         run: |
           # Let Twister decide based on testcase.yaml
           west twister \
-            -T modules/lib/test-modem-source/${{ inputs.test-path }} \
+            -T modules/lib/nrfmodule-core/${{ inputs.test-path }} \
             --integration \
             --outdir /tmp/twister-out \
             --clobber
