@@ -11,7 +11,7 @@ manifest:
     - name: sdk-nrf
       remote: ncs
       path: nrf
-      revision: v3.2.1
+      revision: v3.4.0
       import: true
 
     # 2. The Serial Modem (New Dependency)
