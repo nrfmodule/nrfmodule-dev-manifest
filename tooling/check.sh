@@ -59,6 +59,17 @@ case "${1:-}" in
 		for f in "$@"; do is_src "$f" && [ -f "$f" ] && files+=("$f"); done ;;
 esac
 
+# Drop vendored third-party files (opt out with a "nrfmodule-lint: vendored"
+# marker) so faithful upstream copies aren't held to house style.
+if [ "${#files[@]}" -gt 0 ]; then
+	declare -a kept=()
+	for f in "${files[@]}"; do
+		grep -qiE 'nrfmodule-lint:[[:space:]]*vendored' "$f" 2>/dev/null && continue
+		kept+=("$f")
+	done
+	files=( ${kept[@]+"${kept[@]}"} )
+fi
+
 if [ "${#files[@]}" -eq 0 ]; then
 	echo "check: no C/C++ files to check."
 	exit 0
