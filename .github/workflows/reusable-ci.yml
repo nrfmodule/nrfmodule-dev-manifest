@@ -41,6 +41,7 @@ jobs:
           mv $GITHUB_WORKSPACE/pr_code modules/lib/nrfmodule-core
 
       - name: Run Twister
+        id: twister
         working-directory: workspace
         run: |
           # Let Twister decide based on testcase.yaml
@@ -50,9 +51,25 @@ jobs:
             --outdir /tmp/twister-out \
             --clobber
 
+      # Full twister-out is ~66k files and blows the org artifact quota.
+      # Keep only the reports; add logs when the run failed.
+      - name: Collect Reports
+        if: always()
+        run: |
+          mkdir -p /tmp/twister-report
+          cp /tmp/twister-out/twister.json /tmp/twister-out/twister.xml \
+             /tmp/twister-out/twister.log /tmp/twister-report/ || true
+          if [ -d /tmp/twister-out ] && [ "${{ steps.twister.outcome }}" != "success" ]; then
+            cd /tmp/twister-out
+            find . -name '*.log' -exec cp --parents {} /tmp/twister-report/ \;
+          fi
+
       - name: Upload Results
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: twister-report
-          path: /tmp/twister-out/
+          path: /tmp/twister-report/
+          retention-days: 7
+          if-no-files-found: warn
