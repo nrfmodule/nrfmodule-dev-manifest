@@ -9,7 +9,18 @@ on:
       app-dir:
         required: false
         type: string
-        default: "application" 
+        default: "application"
+      # PR gates want the exit status, not binaries — skip the upload entirely.
+      upload-artifacts:
+        required: false
+        type: boolean
+        default: true
+      # Release assets live on the GitHub Release; workflow artifacts are
+      # transient. Short retention protects the org quota (see #11/#13).
+      retention-days:
+        required: false
+        type: number
+        default: 7
 
 jobs:
   build:
@@ -47,6 +58,7 @@ jobs:
 
       # --- Sanitize the Name ---
       - name: Generate Safe Artifact Name
+        if: ${{ inputs.upload-artifacts }}
         id: safe-name
         run: |
           # Replace all slashes '/' with underscores '_'
@@ -56,11 +68,15 @@ jobs:
 
       # --- Use the Safe Name ---
       - name: Save Artifact
+        if: ${{ inputs.upload-artifacts }}
+        # A quota hiccup must not fail an otherwise green build.
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           # Use the sanitized output from the previous step
           name: firmware-${{ steps.safe-name.outputs.board }}
           if-no-files-found: warn
+          retention-days: ${{ inputs.retention-days }}
           path: |
             workspace/build/**/*.hex
             workspace/build/**/*.bin
