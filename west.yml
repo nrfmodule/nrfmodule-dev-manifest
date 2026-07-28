@@ -18,7 +18,7 @@ manifest:
     - name: ncs-serial-modem
       remote: ncs
       path: ncs-serial-modem
-      revision: main
+      revision: "448cf9969a52ad556436245c1dfda59eb3098780"  # deployed serial-modem FW line; bump deliberately with FW deployments
 
     # 3. The Public SDK
     - name: nrfmodule-sdk

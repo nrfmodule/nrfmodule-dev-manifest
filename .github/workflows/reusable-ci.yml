@@ -40,6 +40,10 @@ jobs:
           rm -rf modules/lib/nrfmodule-core
           mv $GITHUB_WORKSPACE/pr_code modules/lib/nrfmodule-core
 
+          # 4. Log the tested revisions (PR code + resolved pins)
+          echo "nrfmodule-core (PR): $GITHUB_SHA"
+          west list -f '{name:24} {path:30} {revision:20} {sha}' || west list
+
       - name: Run Twister
         id: twister
         working-directory: workspace

@@ -25,7 +25,7 @@
 projects:
   - name: sdk-nrf
     remote: ncs
-    revision: v3.1.1  # PINNED - Don't auto-update without testing
+    revision: v3.2.1  # PINNED - Don't auto-update without testing
     import: true
 ```
 
@@ -48,8 +48,9 @@ projects:
 ```
 workspace/
 ├── config/manifest/          # THIS REPO (via self.path)
-├── nrf/                      # Nordic SDK v3.1.1
+├── nrf/                      # Nordic SDK v3.2.1
 ├── zephyr/                   # Transitive from sdk-nrf
+├── ncs-serial-modem/         # Serial modem (pinned SHA)
 ├── modules/lib/
 │   ├── nrfmodule-core/      # Private source
 │   └── nrfmodule-sdk/       # Public wrapper
@@ -63,7 +64,7 @@ workspace/
 **Pre-installed components:**
 - Ubuntu 22.04 base
 - Zephyr SDK 0.17.4 (ARM toolchain only to save space)
-- NCS v3.1.1 with all Python requirements
+- NCS v3.2.1 with all Python requirements
 - QEMU for ARM emulation testing
 - Nordic CLI tools (nrfjprog)
 
