@@ -12,15 +12,24 @@ on:
         default: "application"
       # PR gates want the exit status, not binaries — skip the upload entirely.
       upload-artifacts:
+        description: Upload built hex/bin/zip/elf as a workflow artifact (PR gates set false).
         required: false
         type: boolean
         default: true
       # Release assets live on the GitHub Release; workflow artifacts are
       # transient. Short retention protects the org quota (see #11/#13).
       retention-days:
+        description: Workflow-artifact retention in days, 1-90.
         required: false
         type: number
         default: 7
+      # Release callers download the artifact to attach to the Release — a
+      # silent upload failure there surfaces as a missing asset much later.
+      require-artifacts:
+        description: Fail the job if the upload fails or finds no files (release callers set true).
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -69,13 +78,14 @@ jobs:
       # --- Use the Safe Name ---
       - name: Save Artifact
         if: ${{ inputs.upload-artifacts }}
-        # A quota hiccup must not fail an otherwise green build.
-        continue-on-error: true
+        # A quota hiccup must not fail an otherwise green PR build; release
+        # callers set require-artifacts to make missing/failed uploads fatal.
+        continue-on-error: ${{ !inputs.require-artifacts }}
         uses: actions/upload-artifact@v4
         with:
           # Use the sanitized output from the previous step
           name: firmware-${{ steps.safe-name.outputs.board }}
-          if-no-files-found: warn
+          if-no-files-found: ${{ inputs.require-artifacts && 'error' || 'warn' }}
           retention-days: ${{ inputs.retention-days }}
           path: |
             workspace/build/**/*.hex
