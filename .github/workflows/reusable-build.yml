@@ -35,7 +35,7 @@ on:
       WEST_TOKEN:
         description: >-
           Fine-grained PAT (contents: read, repo access: nrfmodule-core) so
-          west can clone the private core. Optional — absent means public
+          west can clone the private core. Optional; absent means public
           modules only (blocklist callers unaffected). Same-org callers can
           pass `secrets: inherit`; external callers must pass it explicitly.
           Applies to https:// manifests only.
@@ -58,7 +58,7 @@ jobs:
           path: ${{ inputs.app-dir }}
           fetch-depth: 0
 
-      # Shell guard, not a step `if:` — the secrets context is not available
+      # Shell guard, not a step `if:`: the secrets context is not available
       # in step-level if conditions. Scoped to the private core repo only
       # (not the org base): a stale/revoked PAT must not break the public
       # manifest/sdk clones that work anonymously. git picks the longest
