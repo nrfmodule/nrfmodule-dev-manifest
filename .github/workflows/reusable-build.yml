@@ -10,20 +10,20 @@ on:
         required: false
         type: string
         default: "application"
-      # PR gates want the exit status, not binaries — skip the upload entirely.
+      # PR gates want the exit status, not binaries; skip the upload entirely.
       upload-artifacts:
         description: Upload built hex/bin/zip/elf as a workflow artifact (PR gates set false).
         required: false
         type: boolean
         default: true
       # Release assets live on the GitHub Release; workflow artifacts are
-      # transient. Short retention protects the org quota (see #11/#13).
+      # transient. Short retention protects the org quota.
       retention-days:
         description: Workflow-artifact retention in days, 1-90.
         required: false
         type: number
         default: 7
-      # Release callers download the artifact to attach to the Release — a
+      # Release callers download the artifact to attach to the Release; a
       # silent upload failure there surfaces as a missing asset much later.
       require-artifacts:
         description: Fail the job if the upload fails or finds no files (release callers set true).
