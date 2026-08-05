@@ -85,6 +85,8 @@ jobs:
       # into a delta fetch (6-8 min down to 1-2). Moving targets stay OUT of
       # the cache: nrfmodule-core and nrfmodule-sdk track main, and
       # config/manifest is this repo at main; all three always fetch fresh.
+      # The path list is part of the cache identity: keep it byte-identical
+      # with the caller's warm workflow and ci.yml, or restores silently miss.
       - name: Restore west workspace cache
         uses: actions/cache/restore@v4
         with:
