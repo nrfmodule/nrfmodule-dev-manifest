@@ -5,8 +5,10 @@
 # failure mode that reads fine in a diff but is untestable.
 #
 # Backend: lizard (pip install lizard). If lizard is not installed the check
-# prints a notice and passes, so local environments without it are not blocked;
-# CI installs it in the Docker image and always enforces.
+# prints a notice and passes, so local environments without it are not blocked.
+# In CI (CI=true) a missing lizard is self-installed via pip, and the check
+# HARD-FAILS if that leaves it unavailable: the gate must never silently skip
+# in CI. Covers bare runners (lint jobs) and the Docker image alike.
 #
 # Escape hatch: a comment on the line above the function whose text STARTS
 # with `#lizard forgives` (lizard matches the comment start; trailing rationale
@@ -25,15 +27,30 @@ CCN_LIMIT="${CCN_LIMIT:-15}"
 FN_LEN_LIMIT="${FN_LEN_LIMIT:-120}"
 FILE_LEN_WARN="${FILE_LEN_WARN:-500}"
 
-if command -v lizard >/dev/null 2>&1; then
-	LIZARD=(lizard)
-elif python3 -m lizard --version >/dev/null 2>&1; then
-	LIZARD=(python3 -m lizard)
-elif python -m lizard --version >/dev/null 2>&1; then
-	LIZARD=(python -m lizard)
-else
-	echo "[complexity] lizard not installed; skipping (pip install lizard)"
-	exit 0
+find_lizard() {
+	if command -v lizard >/dev/null 2>&1; then
+		LIZARD=(lizard)
+	elif python3 -m lizard --version >/dev/null 2>&1; then
+		LIZARD=(python3 -m lizard)
+	elif python -m lizard --version >/dev/null 2>&1; then
+		LIZARD=(python -m lizard)
+	else
+		return 1
+	fi
+}
+
+if ! find_lizard; then
+	if [ "${CI:-}" = "true" ]; then
+		echo "[complexity] lizard missing in CI; installing"
+		python3 -m pip install --quiet --user lizard || true
+		if ! find_lizard; then
+			echo "[complexity] lizard unavailable in CI; FAILING (gate must not silently skip)"
+			exit 1
+		fi
+	else
+		echo "[complexity] lizard not installed; skipping (pip install lizard)"
+		exit 0
+	fi
 fi
 
 out=$("${LIZARD[@]}" --CCN "$CCN_LIMIT" --length "$FN_LEN_LIMIT" \
