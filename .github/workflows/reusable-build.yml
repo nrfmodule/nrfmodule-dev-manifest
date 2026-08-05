@@ -43,7 +43,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # vars resolves in the CALLER's repo/org, so an org-level CI_RUNNER
+    # variable flips every product app to a self-hosted runner at once.
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
     container:
       # Use your custom image
       image: ghcr.io/nrfmodule/nrfmodule-dev-manifest:latest
@@ -75,11 +77,34 @@ jobs:
             url."https://x-access-token:${WEST_TOKEN}@github.com/nrfmodule/nrfmodule-core".insteadOf \
             "https://github.com/nrfmodule/nrfmodule-core"
 
+      # Restores the multi-GB pinned NCS tree so west update fetches deltas
+      # instead of re-cloning (6-8 min down to 1-2). Moving targets stay OUT
+      # of the cache: nrfmodule-core and nrfmodule-sdk track main, and
+      # config/manifest is this repo at main; all three always fetch fresh.
+      # The cache is stored in the CALLER repo (reusable-workflow rule).
+      # Bump the v1 in the key to force a rebuild after an NCS version bump.
+      - name: Restore west workspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootloader
+            modules
+            nrf
+            nrfxlib
+            test
+            tools
+            zephyr
+            !modules/lib/nrfmodule-core
+            !modules/lib/nrfmodule-sdk
+          key: west-v1-${{ runner.os }}-${{ hashFiles(format('{0}/west.yml', inputs.app-dir)) }}
+          restore-keys: |
+            west-v1-${{ runner.os }}-
+
       - name: Initialize Workspace
         run: |
           mkdir workspace
           cd workspace
-          
+
           # Initialize from the App's own manifest (Bootstrap)
           # We point to the folder where we checked out the code
           west init -l ../${{ inputs.app-dir }}
