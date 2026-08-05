@@ -21,6 +21,9 @@ RUN apt-get update && apt-get install -y \
     python3-tk \
     python3-wheel \
     xz-utils \
+    # actions/cache uses zstd when present; without it the multi-GB west
+    # cache falls back to slow single-threaded gzip
+    zstd \
     file \
     make \
     gcc \
