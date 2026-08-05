@@ -64,6 +64,8 @@ RUN pip3 install --upgrade pip setuptools wheel \
     && pip3 install -r zephyr/scripts/requirements.txt \
     && pip3 install -r nrf/scripts/requirements.txt \
     && pip3 install -r bootloader/mcuboot/scripts/requirements.txt \
+    # lizard: cyclomatic-complexity check used by tooling/checks/complexity.sh
+    && pip3 install lizard \
     # Cleanup source code to keep image small
     && rm -rf /workdir/*
 
