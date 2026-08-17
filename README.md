@@ -2,6 +2,11 @@
 
 This is the master configuration for the nRFModule Firmware Ecosystem. It orchestrates the Nordic SDK (NCS), Zephyr, and our private libraries into a single workspace.
 
+> **This is the `v2.x` branch: the NCS 3.2.x maintenance line.**
+> It pins NCS v3.2.1 and the `v2.x` branches of nrfmodule-core and nrfmodule-sdk.
+> New development happens on `main` (NCS 3.4.0 line, nRFModule v3.x).
+> Fixes needed by both lines land on `main` first, then get cherry-picked here and tagged `v2.x.y`.
+
 ## 1. Prerequisites
 
 *   **VS Code** installed.

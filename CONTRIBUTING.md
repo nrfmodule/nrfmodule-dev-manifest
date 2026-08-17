@@ -38,6 +38,14 @@ If you committed to `main` locally but haven't pushed yet:
     ```
 3.  Now you are safe to push the new branch.
 
+### Maintenance lines (`v2.x`)
+
+`v2.x` on core, sdk, and this manifest is the NCS 3.2.x maintenance line, frozen 2026-08-17.
+
+- `v2.x` never receives NCS 3.4.0 work.
+- A fix needed by both lines lands on `main` first, then gets cherry-picked to `v2.x`.
+- Patch releases on the line are tagged `v2.x.y` from the `v2.x` branches.
+
 ### 🛡️ Optional: Install a Safety Hook
 
 To prevent accidents, you can install a "Pre-Push Hook" that blocks pushes to main.
