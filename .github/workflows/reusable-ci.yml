@@ -28,30 +28,52 @@ jobs:
         run: |
           mkdir workspace
           cd workspace
-          
-          # 1. Initialize with your manifest
-          west init -m https://github.com/V1incentC/test-premium-manifest
-          
-          # 2. Download everything (NCS v3.1.1 + Your Libs)
+
+          # 1. Initialize with the platform manifest (NCS v3.2.1 + platform libs)
+          west init -m https://github.com/nrfmodule/nrfmodule-dev-manifest
+
+          # 2. Skip the private core repo: the PR checkout replaces it below
+          west config manifest.project-filter -- "-nrfmodule-core"
           west update
 
-          # 3. THE SWAP (Use the code from the Pull Request)
-          rm -rf modules/lib/test-modem-source
-          mv $GITHUB_WORKSPACE/pr_code modules/lib/test-modem-source
+          # 3. THE SWAP (use the code from the Pull Request)
+          rm -rf modules/lib/nrfmodule-core
+          mv $GITHUB_WORKSPACE/pr_code modules/lib/nrfmodule-core
+
+          # 4. Log the tested revisions (PR code + resolved pins)
+          echo "nrfmodule-core (PR): $GITHUB_SHA"
+          west list -f '{name:24} {path:30} {revision:20} {sha}' || west list
 
       - name: Run Twister
+        id: twister
         working-directory: workspace
         run: |
           # Let Twister decide based on testcase.yaml
           west twister \
-            -T modules/lib/test-modem-source/${{ inputs.test-path }} \
+            -T modules/lib/nrfmodule-core/${{ inputs.test-path }} \
             --integration \
             --outdir /tmp/twister-out \
             --clobber
 
+      # Full twister-out is ~66k files and blows the org artifact quota.
+      # Keep only the reports; add logs when the run failed.
+      - name: Collect Reports
+        if: always()
+        run: |
+          mkdir -p /tmp/twister-report
+          cp /tmp/twister-out/twister.json /tmp/twister-out/twister.xml \
+             /tmp/twister-out/twister.log /tmp/twister-report/ || true
+          if [ -d /tmp/twister-out ] && [ "${{ steps.twister.outcome }}" != "success" ]; then
+            cd /tmp/twister-out
+            find . -name '*.log' -exec cp --parents {} /tmp/twister-report/ \;
+          fi
+
       - name: Upload Results
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: twister-report
-          path: /tmp/twister-out/
+          path: /tmp/twister-report/
+          retention-days: 7
+          if-no-files-found: warn

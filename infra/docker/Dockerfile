@@ -21,6 +21,9 @@ RUN apt-get update && apt-get install -y \
     python3-tk \
     python3-wheel \
     xz-utils \
+    # actions/cache uses zstd when present; without it the multi-GB west
+    # cache falls back to slow single-threaded gzip
+    zstd \
     file \
     make \
     gcc \
@@ -52,14 +55,17 @@ RUN wget -qO - https://nsscprodmedia.blob.core.windows.net/prod/software-and-oth
     && dpkg -i nrf-tools.deb \
     && rm nrf-tools.deb
 
-# 4. Initialize West and Install Python Requirements for NCS v3.1.1
+# 4. Initialize West and Install Python Requirements for NCS v3.2.1
 WORKDIR /workdir
-RUN pip3 install west \
-    && west init -m https://github.com/nrfconnect/sdk-nrf --mr v3.1.1 \
+RUN pip3 install --upgrade pip setuptools wheel \
+    && pip3 install west \
+    && west init -m https://github.com/nrfconnect/sdk-nrf --mr v3.2.1 \
     && west update --narrow -o=--depth=1 \
     && pip3 install -r zephyr/scripts/requirements.txt \
     && pip3 install -r nrf/scripts/requirements.txt \
     && pip3 install -r bootloader/mcuboot/scripts/requirements.txt \
+    # lizard: cyclomatic-complexity check used by tooling/checks/complexity.sh
+    && pip3 install lizard \
     # Cleanup source code to keep image small
     && rm -rf /workdir/*
 

@@ -9,11 +9,44 @@ on:
       app-dir:
         required: false
         type: string
-        default: "application" 
+        default: "application"
+      # Off by default: PR gates want the exit status, not binaries. Callers
+      # that consume the files (release attach, bench flashing) set true.
+      upload-artifacts:
+        description: Upload built hex/bin/zip/elf as a workflow artifact (release callers set true).
+        required: false
+        type: boolean
+        default: false
+      # Release assets live on the GitHub Release; workflow artifacts are
+      # transient. Short retention protects the org quota.
+      retention-days:
+        description: Workflow-artifact retention in days, 1-90.
+        required: false
+        type: number
+        default: 7
+      # Release callers download the artifact to attach to the Release; a
+      # silent upload failure there surfaces as a missing asset much later.
+      require-artifacts:
+        description: Fail the job if the upload fails or finds no files (release callers set true).
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      WEST_TOKEN:
+        description: >-
+          Fine-grained PAT (contents: read, repo access: nrfmodule-core) so
+          west can clone the private core. Optional; absent means public
+          modules only (blocklist callers unaffected). Same-org callers can
+          pass `secrets: inherit`; external callers must pass it explicitly.
+          Applies to https:// manifests only.
+        required: false
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # vars resolves in the CALLER's repo/org, so an org-level variable flips
+    # every product app to a self-hosted runner at once. Single label only;
+    # a comma-separated value matches nothing and the job queues forever.
+    runs-on: ${{ vars.NRFMODULE_CI_RUNNER || 'ubuntu-latest' }}
     container:
       # Use your custom image
       image: ghcr.io/nrfmodule/nrfmodule-dev-manifest:latest
@@ -23,16 +56,59 @@ jobs:
     
     steps:
       - name: Checkout App
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          # Check out the calling repo (Product A) into the folder specified
           path: ${{ inputs.app-dir }}
+          fetch-depth: 0
+
+      # Shell guard, not a step `if:`: the secrets context is not available
+      # in step-level if conditions. Scoped to the private core repo only
+      # (not the org base): a stale/revoked PAT must not break the public
+      # manifest/sdk clones that work anonymously. git picks the longest
+      # matching URL prefix; add entries if more private modules appear.
+      - name: Git auth for private west modules
+        env:
+          WEST_TOKEN: ${{ secrets.WEST_TOKEN }}
+        run: |
+          if [ -z "$WEST_TOKEN" ]; then
+            echo "WEST_TOKEN not set; public modules only."
+            exit 0
+          fi
+          git config --global \
+            url."https://x-access-token:${WEST_TOKEN}@github.com/nrfmodule/nrfmodule-core".insteadOf \
+            "https://github.com/nrfmodule/nrfmodule-core"
+
+      # Restore-only: caches live in the CALLER repo, and a caller that wants
+      # hits runs a warm workflow on its default branch as the single writer
+      # (nRFTrackerFW: west-cache-warm.yml). Callers without one just miss
+      # here at near-zero cost. Restoring turns west update's multi-GB clone
+      # into a delta fetch (6-8 min down to 1-2). Moving targets stay OUT of
+      # the cache: nrfmodule-core and nrfmodule-sdk track main, and
+      # config/manifest is this repo at main; all three always fetch fresh.
+      # The path list is part of the cache identity: keep it byte-identical
+      # with the caller's warm workflow and ci.yml, or restores silently miss.
+      - name: Restore west workspace cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            bootloader
+            modules
+            nrf
+            nrfxlib
+            test
+            tools
+            zephyr
+            !modules/lib/nrfmodule-core
+            !modules/lib/nrfmodule-sdk
+          key: west-v1-${{ runner.os }}-
+          restore-keys: |
+            west-v1-${{ runner.os }}-
 
       - name: Initialize Workspace
         run: |
           mkdir workspace
           cd workspace
-          
+
           # Initialize from the App's own manifest (Bootstrap)
           # We point to the folder where we checked out the code
           west init -l ../${{ inputs.app-dir }}
@@ -47,6 +123,7 @@ jobs:
 
       # --- Sanitize the Name ---
       - name: Generate Safe Artifact Name
+        if: ${{ inputs.upload-artifacts }}
         id: safe-name
         run: |
           # Replace all slashes '/' with underscores '_'
@@ -56,11 +133,16 @@ jobs:
 
       # --- Use the Safe Name ---
       - name: Save Artifact
+        if: ${{ inputs.upload-artifacts }}
+        # A quota hiccup must not fail an otherwise green PR build; release
+        # callers set require-artifacts to make missing/failed uploads fatal.
+        continue-on-error: ${{ !inputs.require-artifacts }}
         uses: actions/upload-artifact@v4
         with:
           # Use the sanitized output from the previous step
           name: firmware-${{ steps.safe-name.outputs.board }}
-          if-no-files-found: warn
+          if-no-files-found: ${{ inputs.require-artifacts && 'error' || 'warn' }}
+          retention-days: ${{ inputs.retention-days }}
           path: |
             workspace/build/**/*.hex
             workspace/build/**/*.bin

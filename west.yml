@@ -18,13 +18,13 @@ manifest:
     - name: ncs-serial-modem
       remote: ncs
       path: ncs-serial-modem
-      revision: main
+      revision: "448cf9969a52ad556436245c1dfda59eb3098780"  # deployed serial-modem FW line; bump deliberately with FW deployments
 
     # 3. The Public SDK
     - name: nrfmodule-sdk
       remote: nrfmodule
       path: modules/lib/nrfmodule-sdk
-      revision: v2.3.0
+      revision: v2.x  # NCS 3.2.x maintenance line. Customers: use a tagged revision (e.g., v2.2.0)
       # We still import it to get its dependencies (if any),
       # but its definition of 'sdk-nrf' will be IGNORED because we defined it above.
       import: true
@@ -33,7 +33,7 @@ manifest:
     - name: nrfmodule-core
       remote: nrfmodule
       path: modules/lib/nrfmodule-core
-      revision: v2.3.0
+      revision: v2.x  # NCS 3.2.x maintenance line. Customers: use a tagged revision (e.g., v2.2.0)
 
   self:
     path: config/manifest

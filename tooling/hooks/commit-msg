@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# nrfmodule commit-msg hook — reject AI attribution in the commit message.
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec bash "$HOOK_DIR/../checks/no-ai-attribution.sh" "$1"
