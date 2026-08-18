@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y \
 
 # 2. Install the Zephyr SDK (Minimal Bundle)
 # We only install the ARM toolchain to save 20GB+ of space.
-ARG ZSDK_VERSION=0.17.4
+ARG ZSDK_VERSION=1.0.1
 WORKDIR /opt/toolchains
 RUN wget -q "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZSDK_VERSION}/zephyr-sdk-${ZSDK_VERSION}_linux-x86_64_minimal.tar.xz" \
     && tar xf zephyr-sdk-${ZSDK_VERSION}_linux-x86_64_minimal.tar.xz \
@@ -55,11 +55,11 @@ RUN wget -qO - https://nsscprodmedia.blob.core.windows.net/prod/software-and-oth
     && dpkg -i nrf-tools.deb \
     && rm nrf-tools.deb
 
-# 4. Initialize West and Install Python Requirements for NCS v3.2.1
+# 4. Initialize West and Install Python Requirements for NCS v3.4.0
 WORKDIR /workdir
 RUN pip3 install --upgrade pip setuptools wheel \
     && pip3 install west \
-    && west init -m https://github.com/nrfconnect/sdk-nrf --mr v3.2.1 \
+    && west init -m https://github.com/nrfconnect/sdk-nrf --mr v3.4.0 \
     && west update --narrow -o=--depth=1 \
     && pip3 install -r zephyr/scripts/requirements.txt \
     && pip3 install -r nrf/scripts/requirements.txt \

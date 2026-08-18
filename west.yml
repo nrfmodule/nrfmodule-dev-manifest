@@ -11,7 +11,7 @@ manifest:
     - name: sdk-nrf
       remote: ncs
       path: nrf
-      revision: v3.2.1
+      revision: v3.4.0
       import: true
 
     # 2. The Serial Modem (New Dependency)
@@ -24,7 +24,7 @@ manifest:
     - name: nrfmodule-sdk
       remote: nrfmodule
       path: modules/lib/nrfmodule-sdk
-      revision: main  # Latest development. Customers: use a tagged revision (e.g., v2.2.0)
+      revision: main  # Latest development. Customers: use a tagged revision (e.g., v3.0.0)
       # We still import it to get its dependencies (if any),
       # but its definition of 'sdk-nrf' will be IGNORED because we defined it above.
       import: true
@@ -33,7 +33,7 @@ manifest:
     - name: nrfmodule-core
       remote: nrfmodule
       path: modules/lib/nrfmodule-core
-      revision: main  # Latest development. Customers: use a tagged revision (e.g., v2.2.0)
+      revision: main  # Latest development. Customers: use a tagged revision (e.g., v3.0.0)
 
   self:
     path: config/manifest
