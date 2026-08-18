@@ -1,0 +1,27 @@
+# Filed issues — 2026-07-06
+
+- https://github.com/nrfmodule/nRFTrackerFW/issues/53 — SLEEP/WAIT_BEGIN cannot abort an in-flight GPS acquisition — L76 stays on up to gps_acq_timeout_s after pause
+- https://github.com/nrfmodule/nRFTrackerFW/issues/54 — Begin/halt (startAt) not persisted — any reset boots ACTIVE; server `reboot` makes this routine
+- https://github.com/nrfmodule/nRFTrackerFW/issues/55 — Server-command allowlist over-grants `led`; `blink` depends on a shell module labeled "HIL visual tuning"
+- https://github.com/nrfmodule/nRFTrackerFW/issues/56 — `prod_gps_on` runs agnss_ensure_applied() before checking gnss_producer_start rc — EPO upload fired at a dead/refused receiver
+- https://github.com/nrfmodule/nRFTrackerFW/issues/57 — Retire the filesystem.c pass-through wrappers — keep mount/format only
+- https://github.com/nrfmodule/nRFTrackerFW/issues/58 — Delete src/gps.c — rival GNSS owner, superseded by agnss_shell
+- https://github.com/nrfmodule/nRFTrackerFW/issues/59 — Sampler cadence is interval-between-cycles, not a fixed period — decide + document
+- https://github.com/nrfmodule/nRFTrackerFW/issues/60 — architecture.md still describes unbuilt designs (timestamp back-dating; queue figures)
+- https://github.com/nrfmodule/nrfmodule-core/issues/20 — C1 — Blocking AT from the system workqueue self-deadlocks the AT pipeline; core's own HTTP timeout path does it
+- https://github.com/nrfmodule/nrfmodule-core/issues/21 — C2 — MQTT publish datamode window: command and payload are separate lock acquisitions; auto-sleep and any AT caller can inject into the payload
+- https://github.com/nrfmodule/nrfmodule-core/issues/22 — C3 — Stale `at_rsp` semaphore + racy `sm_at_state` permanently desync command/response pairing after any timeout
+- https://github.com/nrfmodule/nrfmodule-core/issues/23 — C4 — Every URC is delivered twice to every AT_MONITOR handler (MON_ANY bridge + direct dispatch both active)
+- https://github.com/nrfmodule/nrfmodule-core/issues/24 — C5 — SDK `sm_modem_power_mgmt_txn_begin/end` invites ABBA deadlock; remove before v2.3.0 tags it into existence
+- https://github.com/nrfmodule/nrfmodule-core/issues/25 — C6 — `UART_RX_BUF_REQUEST` error path corrupts RX slab refcounts (`buf_unref` given the block pointer, not the data pointer)
+- https://github.com/nrfmodule/nrfmodule-core/issues/26 — C7 — `handle_mqtt_msg` trusts URC-declared lengths: heap overread on truncated/split `#XMQTTMSG`
+- https://github.com/nrfmodule/nrfmodule-core/issues/27 — C8 — `sm` shell and `smsh uart` bypass all AT locking and power management
+- https://github.com/nrfmodule/nrfmodule-core/issues/28 — C9 — Hardening batch: automatic-DTR races, `g_resp_buf` clear-vs-append, URC heap sizing, buffer/stack defaults, lock-free reset
+- https://github.com/nrfmodule/nrfmodule-dev-manifest/issues/7 — A1. reusable-ci.yml tests PR code against a stale personal prototype manifest (NCS v3.1.1), not this manifest
+- https://github.com/nrfmodule/nrfmodule-dev-manifest/issues/8 — A2. west.yml pins ncs-serial-modem to `revision: main` — floating dependency now 177 commits ahead, targeting NCS v3.4.0
+- https://github.com/nrfmodule/nrfmodule-sdk/issues/20 — A3. livetracker/nrf9151/ns board definition out of sync with deployed modem-FW UART config (115200/no-HWFC vs 921600+HWFC, RTS/CTS swapped)
+- https://github.com/nrfmodule/nrfmodule-core/issues/29 — A4. Vendored sm_at_client missing upstream bounds-clamp and RX-recovery fixes
+- https://github.com/nrfmodule/nrfmodule-core/issues/30 — A5. pdn_client.cmake references nrf/lib/pdn, which is removed in NCS v3.4.0
+- https://github.com/nrfmodule/nrfmodule-sdk/issues/21 — A6. Default west.yml still pins sdk-nrf v3.1.1 — standalone SDK consumers get an untested NCS
+- https://github.com/nrfmodule/nrfmodule-sdk/issues/22 — A7. SDK has no CI — changes are never built or tested by automation
+- https://github.com/nrfmodule/nrfmodule-dev-manifest/issues/9 — A8. Docs claim the Docker image installs NCS v3.1.1 Python deps — stale since the v3.2.1 image fix
