@@ -12,6 +12,7 @@ on:
         default: "application"
       # Off by default: PR gates want the exit status, not binaries. Callers
       # that consume the files (release attach, bench flashing) set true.
+      # require-artifacts also turns the upload on.
       upload-artifacts:
         description: Upload built hex/bin/zip/elf as a workflow artifact (release callers set true).
         required: false
@@ -26,8 +27,9 @@ on:
         default: 7
       # Release callers download the artifact to attach to the Release; a
       # silent upload failure there surfaces as a missing asset much later.
+      # Implies upload-artifacts: requiring without uploading is a contradiction.
       require-artifacts:
-        description: Fail the job if the upload fails or finds no files (release callers set true).
+        description: Fail the job if the upload fails or finds no files; implies upload-artifacts (release callers set true).
         required: false
         type: boolean
         default: false
@@ -122,8 +124,10 @@ jobs:
           west build -b ${{ inputs.board }} ../${{ inputs.app-dir }}
 
       # --- Sanitize the Name ---
+      # Either flag runs the artifact steps: require-artifacts alone used to
+      # skip them silently and only fail later at the release download.
       - name: Generate Safe Artifact Name
-        if: ${{ inputs.upload-artifacts }}
+        if: ${{ inputs.upload-artifacts || inputs.require-artifacts }}
         id: safe-name
         run: |
           # Replace all slashes '/' with underscores '_'
@@ -133,7 +137,7 @@ jobs:
 
       # --- Use the Safe Name ---
       - name: Save Artifact
-        if: ${{ inputs.upload-artifacts }}
+        if: ${{ inputs.upload-artifacts || inputs.require-artifacts }}
         # A quota hiccup must not fail an otherwise green PR build; release
         # callers set require-artifacts to make missing/failed uploads fatal.
         continue-on-error: ${{ !inputs.require-artifacts }}
