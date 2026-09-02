@@ -25,11 +25,19 @@
 projects:
   - name: sdk-nrf
     remote: ncs
-    revision: v3.2.1  # PINNED - Don't auto-update without testing
+    revision: v3.4.0  # PINNED - Don't auto-update without testing
     import: true
 ```
 
 **Why pinned?** West's `import` can transitively pull different versions. By listing `sdk-nrf` FIRST with explicit revision, we override any transitive dependencies.
+
+**Serial Modem Firmware Pin:**
+```yaml
+  - name: ncs-serial-modem
+    remote: nrfmodule      # our fork, not the Nordic upstream
+    path: ncs-serial-modem
+    revision: v0.8.0-ncs340  # release tag; bump only with a modem FW deployment
+```
 
 **Internal Module Loading:**
 ```yaml
@@ -48,9 +56,9 @@ projects:
 ```
 workspace/
 ├── config/manifest/          # THIS REPO (via self.path)
-├── nrf/                      # Nordic SDK v3.2.1
+├── nrf/                      # Nordic SDK v3.4.0
 ├── zephyr/                   # Transitive from sdk-nrf
-├── ncs-serial-modem/         # Serial modem (pinned SHA)
+├── ncs-serial-modem/         # Serial modem (nrfmodule fork, tag v0.8.0-ncs340)
 ├── modules/lib/
 │   ├── nrfmodule-core/      # Private source
 │   └── nrfmodule-sdk/       # Public wrapper
@@ -63,15 +71,15 @@ workspace/
 
 **Pre-installed components:**
 - Ubuntu 22.04 base
-- Zephyr SDK 0.17.4 (ARM toolchain only to save space)
-- NCS v3.2.1 with all Python requirements
+- Zephyr SDK 1.0.1 (ARM toolchain only to save space)
+- NCS v3.4.0 with all Python requirements
 - QEMU for ARM emulation testing
 - Nordic CLI tools (nrfjprog)
 
 **Environment variables set:**
 ```dockerfile
 ENV ZEPHYR_TOOLCHAIN_VARIANT=zephyr
-ENV ZEPHYR_SDK_INSTALL_DIR=/opt/toolchains/zephyr-sdk-0.17.4
+ENV ZEPHYR_SDK_INSTALL_DIR=/opt/toolchains/zephyr-sdk-1.0.1
 ```
 
 **Image published to:** `ghcr.io/nrfmodule/nrfmodule-dev-manifest:latest`
@@ -85,10 +93,15 @@ ENV ZEPHYR_SDK_INSTALL_DIR=/opt/toolchains/zephyr-sdk-0.17.4
 - Runs: `west twister -T {test-path}` in Docker container
 - Caller example: `nrfmodule-core/.github/workflows/ci.yml`
 
-**`.github/workflows/reusable-build.yml`** - For application builds (used by product-template):
-- Inputs: `board`, `build-path`
-- Runs: `west build` in Docker container
-- Caller example: `nrfmodule-product-template/.github/workflows/build.yml`
+**`.github/workflows/reusable-build.yml`** - For application builds (used by product apps):
+- Inputs: `board` (required), `app-dir` (default `application`), `upload-artifacts`, `retention-days`, `require-artifacts`
+- Secret: `WEST_TOKEN` (optional PAT for cloning the private core)
+- Runs: `west build -b {board} ../{app-dir}` in Docker container
+- Caller example: `nRFTrackerFW/.github/workflows/ci.yml`
+
+**`.github/workflows/reusable-lint.yml`** - Code-quality gate (used by product repos):
+- Inputs: `ref-range` (optional; default is PR base..HEAD)
+- Runs: `tooling/check.sh` from this repo on the changed C/C++ files. clang-format drift is advisory only.
 
 **Access control:** Repository Settings → Actions → General → "Allow reusable workflows" enabled
 
