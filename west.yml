@@ -16,9 +16,9 @@ manifest:
 
     # 2. The Serial Modem (New Dependency)
     - name: ncs-serial-modem
-      remote: ncs
+      remote: nrfmodule
       path: ncs-serial-modem
-      revision: "448cf9969a52ad556436245c1dfda59eb3098780"  # deployed serial-modem FW line; bump deliberately with FW deployments
+      revision: v0.8.0-ncs340  # deployed serial-modem FW line; bump deliberately with FW deployments
 
     # 3. The Public SDK
     - name: nrfmodule-sdk
