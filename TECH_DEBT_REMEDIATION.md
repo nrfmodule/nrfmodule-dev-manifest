@@ -1,5 +1,11 @@
 # Technical Debt Remediation Plan: nRF Modem Library Migration
 
+> **Status (2026-09-03): executed. Kept as history.**
+> The `nrf_modem_at` shim lives in `nrfmodule-core/src/client/`.
+> The public headers live in `nrfmodule-sdk/include/`.
+> Nordic's stock `lte_link_control` sources are compiled unchanged by `lte_lc_client.cmake` in nrfmodule-core.
+> The fork of `lte_lc` described below was not kept.
+
 ## Summary Table
 
 | Metric | Rating | Description |

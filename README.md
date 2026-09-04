@@ -35,8 +35,11 @@ Once finished, open the folder in VS Code. You should see a folder structure lik
 ```text
 workspace/
 ├── .west/
-├── nrf/                  <-- Nordic SDK (v3.x)
+├── config/
+│   └── manifest/         <-- THIS REPO (west.yml, CI workflows, Docker image)
+├── nrf/                  <-- Nordic SDK (NCS v3.4.0)
 ├── zephyr/               <-- Zephyr RTOS
+├── ncs-serial-modem/     <-- nRF9151 modem firmware (nrfmodule fork, tag v0.8.0-ncs340)
 ├── modules/
 │   └── lib/
 │       ├── nrfmodule-core/  <-- PRIVATE SOURCE (Edit code here!)
@@ -53,8 +56,6 @@ workspace/
 2.  You will see multiple repositories listed (manifest, core, sdk, zephyr, nrf).
 3.  Locate **`nrfmodule-core`** (or whichever repo you are editing).
 4.  Create a new branch: `feature/my-new-feature`.
-
-![Source Control View](doc/images/source_control.png)
 
 ### Step 2: Test Your Changes
 To run your code, you need an application.
@@ -86,22 +87,23 @@ We use **semantic versioning** independent of NCS versions. This gives us our ow
 
 | nRFModule Version | NCS Version | Branches | Status |
 |-------------------|-------------|----------|--------|
-| **v2.x** | **3.2.x** | `main`, `v2.x` | ✅ **Active Development** |
-| v1.x | 3.1.x | `v1.x` | 🔧 Maintenance Only |
+| **v3.x** | **3.4.x** | `main` | ✅ **Active Development** (latest tag v3.0.0) |
+| v2.x | 3.2.x | `v2.x` | 🧊 Frozen at v2.4.0 |
+| v1.x | 3.1.x | `legacy-ncs-v3.1` (manifest), `v1.x` (core, sdk) | 🔧 Legacy, critical fixes only |
 
 ### Branch Workflow
 
 ```
-main                    ← Latest stable across all versions
-  ├─ v2.x              ← v2.x series (NCS 3.2.x) - receives patches as v2.0.1, v2.1.0, etc.
-  ├─ v1.x              ← v1.x series (NCS 3.1.x) - maintenance only
+main                    ← v3.x series (NCS 3.4.x), latest stable
+  ├─ v2.x              ← v2.x series (NCS 3.2.x), frozen at v2.4.0
+  ├─ legacy-ncs-v3.1   ← v1.x series (NCS 3.1.x), critical fixes only
   └─ feature/*         ← Short-lived feature branches
 ```
 
 **Branch Purpose:**
-- `main` - Always points to the latest stable release (currently v2.x)
-- `v2.x` - Stable branch for v2 series, receives patch/minor releases (v2.0.1, v2.1.0, etc.)
-- `v1.x` - Stable branch for v1 series (legacy), only critical fixes
+- `main` - Always points to the latest stable release (currently v3.x on NCS 3.4.x)
+- `v2.x` - Frozen branch for the v2 series on NCS 3.2.x. Last tag is v2.4.0. No new releases.
+- `legacy-ncs-v3.1` - Manifest branch for the v1 series on NCS 3.1.x. Only critical fixes. The core and sdk repos name this branch `v1.x`.
 
 ### Creating a Release
 
@@ -118,7 +120,7 @@ main                    ← Latest stable across all versions
    git checkout -b fix/issue-123
    # Make fixes, commit
    git push -u nrfmodule fix/issue-123
-   # PR to main → tagged as v2.0.1 (patch)
+   # PR to main → tagged as v3.0.1 (patch)
    ```
 
 3. **Release Tagging:**
@@ -129,12 +131,12 @@ main                    ← Latest stable across all versions
    
    # Tag both repositories with same version
    cd modules/lib/nrfmodule-core
-   git tag -a v2.1.0 -m "Release v2.1.0: Description"
-   git push nrfmodule v2.1.0
+   git tag -a v3.1.0 -m "Release v3.1.0: Description"
+   git push nrfmodule v3.1.0
    
    cd ../nrfmodule-sdk
-   git tag -a v2.1.0 -m "Release v2.1.0: Description"
-   git push nrfmodule v2.1.0
+   git tag -a v3.1.0 -m "Release v3.1.0: Description"
+   git push nrfmodule v3.1.0
    ```
 
 4. **Updating This Manifest:**
@@ -147,9 +149,9 @@ When Nordic releases a new NCS version:
 1. Create `feature/ncs-vX.X-port` branch
 2. Follow [nrfmodule-core/docs/NCS_PORTING_GUIDE.md](https://github.com/nrfmodule/nrfmodule-core/blob/main/docs/NCS_PORTING_GUIDE.md)
 3. Decide on version bump:
-   - **Patch (v2.0.1):** Bug fixes only
-   - **Minor (v2.1.0):** New features, backward compatible
-   - **Major (v3.0.0):** Breaking changes
+   - **Patch (v3.0.1):** Bug fixes only
+   - **Minor (v3.1.0):** New features, backward compatible
+   - **Major (v4.0.0):** Breaking changes
 4. Merge to `main` and tag
 5. Update this manifest's `west.yml` to new NCS version
 
@@ -164,22 +166,37 @@ manifest:
       url: https://github.com/nrfmodule/nrfmodule-sdk
       # Choose one of these revision strategies:
       
-      revision: v2.0.0  # 1. Pin to specific release (most stable, recommended for production)
+      revision: v3.0.0  # 1. Pin to a release tag (most stable, recommended for production)
       # OR
-      revision: v2.x    # 2. Track v2.x series (get patch/minor updates automatically)
+      revision: main    # 2. Latest development on NCS 3.4.x
       # OR
-      revision: main    # 3. Always latest stable (get major updates automatically)
+      revision: v2.x    # 3. Frozen v2.x series on NCS 3.2.x (last tag v2.4.0)
       # OR
-      revision: v1.x    # 4. Legacy NCS 3.1.x support (maintenance only)
+      revision: v1.x    # 4. Legacy NCS 3.1.x support (critical fixes only)
 ```
 
-**Recommendation:** Use `v2.x` for active development to get bug fixes automatically, then pin to specific tag (e.g., `v2.0.0`) before production release.
+**Recommendation:** Use `main` for active development. Pin to a release tag (e.g., `v3.0.0`) before a production release.
 
 ## 6. CI/CD & Docker
 
-This repository hosts the Docker image used by our CI pipelines.
-*   **Image:** `ghcr.io/nrfmodule/nrfmodule-dev-manifest:latest`
+This repository hosts the Docker image and the reusable GitHub Actions workflows used by all nRFModule repos.
+*   **Image:** `ghcr.io/nrfmodule/nrfmodule-dev-manifest:latest` (Ubuntu 22.04, Zephyr SDK 1.0.1 ARM-only, NCS v3.4.0 Python deps).
 *   **Trigger:** Modifying files in `infra/docker/` will trigger a rebuild of the image (takes ~15 mins).
+
+### Reusable Workflows
+
+| Workflow | Called by | What it does |
+| :--- | :--- | :--- |
+| `reusable-ci.yml` | nrfmodule-core | Builds a workspace, swaps in the PR code, runs `west twister`. |
+| `reusable-build.yml` | Product apps | Runs `west build` for input `board` in input `app-dir`. Uploads hex/bin/elf when `upload-artifacts` is true. |
+| `reusable-lint.yml` | Product apps and libraries | Runs the code-quality gate `tooling/check.sh` on the changed C files. clang-format drift is advisory only. |
+
+### Cost Controls
+
+The org is on the GitHub free plan. Hosted minutes are limited. See the "Cost controls" section in [CLAUDE.md](CLAUDE.md) for the full rules. In short:
+*   Docs-only PRs skip the build and test jobs. The lint gate always runs.
+*   Product apps restore a cached west workspace. Only the caller repo's `west-cache-warm.yml` writes the cache.
+*   Set the org variable `NRFMODULE_CI_RUNNER` to one self-hosted runner label. `reusable-build.yml` and the tracker `ci.yml` and `west-cache-warm.yml` jobs then run there. `reusable-ci.yml`, `reusable-lint.yml`, `publish-docker.yml` and the tracker `release.yml` still hard-code `ubuntu-latest`.
 
 ## 7. FAQ
 
@@ -187,10 +204,10 @@ This repository hosts the Docker image used by our CI pipelines.
 A: Always create a feature branch. Never commit directly to `main`.
 
 **Q: Which version should customers use?**  
-A: For new projects on NCS 3.2.x, use `v2.0.0` or `main`. For NCS 3.1.x, use `v1.x`.
+A: For new projects on NCS 3.4.x, use `v3.0.0` or `main`. For NCS 3.2.x, use `v2.x` (frozen at v2.4.0). For NCS 3.1.x, use `v1.x`.
 
 **Q: How do I backport a fix to v1.x?**  
-A: Cherry-pick the commit to the `v1.x` branch and tag as v1.0.1, v1.0.2, etc.
+A: Cherry-pick the commit to the `v1.x` branch on core and sdk (the manifest branch is `legacy-ncs-v3.1`) and tag as v1.0.1, v1.0.2, etc.
 
 **Q: Do I need to tag both core and SDK with the same version?**  
 A: Yes! Keep versions synchronized across both repositories for clarity.
