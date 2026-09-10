@@ -61,7 +61,9 @@ RUN wget -qO - https://nsscprodmedia.blob.core.windows.net/prod/software-and-oth
 
 # 4. Initialize West and Install Python Requirements for NCS v3.4.0
 WORKDIR /workdir
-RUN pip3 install --upgrade pip setuptools wheel \
+# --ignore-installed: 24.04 ships these as Debian packages without pip
+# RECORD files, and pip refuses to uninstall them.
+RUN pip3 install --ignore-installed --upgrade pip setuptools wheel \
     && pip3 install west \
     && west init -m https://github.com/nrfconnect/sdk-nrf --mr v3.4.0 \
     && west update --narrow -o=--depth=1 \
