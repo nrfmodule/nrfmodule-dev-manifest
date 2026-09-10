@@ -43,6 +43,9 @@ jobs:
           context: .
           file: infra/docker/Dockerfile
           push: true
+          # :latest moves with every rebuild; consumers pin the immutable
+          # :sha-<manifest commit> tag and bump it on purpose.
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ncs-v3.2.1
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ncs-v3.4.0
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
