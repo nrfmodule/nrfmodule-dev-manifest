@@ -133,8 +133,10 @@ jobs:
           # We point to the folder where we checked out the code
           west init -l ../${{ inputs.app-dir }}
           
-          # Download SDK + Libraries (as defined in premium manifest)
-          west update
+          # Shallow, narrow fetch: a build needs the pinned revisions, not
+          # history. Full clones are multi-GB, take 7 minutes and do not
+          # fit a cache save on a hosted runner's disk.
+          west update --narrow -o=--depth=1
 
       - name: Build Firmware
         working-directory: workspace
