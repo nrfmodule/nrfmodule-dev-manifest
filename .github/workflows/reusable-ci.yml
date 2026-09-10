@@ -56,7 +56,8 @@ jobs:
 
           # 2. Skip the private core repo: the PR checkout replaces it below
           west config manifest.project-filter -- "-nrfmodule-core"
-          west update
+          # Shallow, narrow fetch: tests need the pinned revisions, not history.
+          west update --narrow -o=--depth=1
 
           # 3. THE SWAP (use the code from the Pull Request)
           rm -rf modules/lib/nrfmodule-core
