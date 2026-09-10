@@ -12,7 +12,8 @@ on:
         default: "application"
       # Space-separated KEY=VALUE pairs exported before west build. App
       # CMake files read flavor switches from the environment (for example
-      # ACCEL_REC=y); this is the only way a caller can select one.
+      # ACCEL_REC=y); this is the only way a caller can select one. The
+      # keys are logged; never route a secret through it.
       build-env:
         description: Space-separated KEY=VALUE pairs exported before west build (flavor switches).
         required: false
@@ -141,7 +142,7 @@ jobs:
           BUILD_ENV: ${{ inputs.build-env }}
         run: |
           for kv in $BUILD_ENV; do
-            echo "export $kv"
+            echo "export ${kv%%=*}"
             export "$kv"
           done
           west build -b ${{ inputs.board }} ../${{ inputs.app-dir }}
