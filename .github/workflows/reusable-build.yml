@@ -34,11 +34,11 @@ on:
     secrets:
       WEST_TOKEN:
         description: >-
-          Fine-grained PAT (contents: read, repo access: nrfmodule-core) so
-          west can clone the private core. Optional; absent means public
-          modules only (blocklist callers unaffected). Same-org callers can
-          pass `secrets: inherit`; external callers must pass it explicitly.
-          Applies to https:// manifests only.
+          Fine-grained PAT (contents: read) with repo access to every
+          private west module: nrfmodule-core, nrfmodule-sdk and
+          ncs-serial-modem. Optional; absent means public modules only.
+          Same-org callers can pass `secrets: inherit`; external callers
+          must pass it explicitly. Applies to https:// manifests only.
         required: false
 
 jobs:
@@ -62,10 +62,10 @@ jobs:
           fetch-depth: 0
 
       # Shell guard, not a step `if:`: the secrets context is not available
-      # in step-level if conditions. Scoped to the private core repo only
-      # (not the org base): a stale/revoked PAT must not break the public
-      # manifest/sdk clones that work anonymously. git picks the longest
-      # matching URL prefix; add entries if more private modules appear.
+      # in step-level if conditions. Scoped per private repo (not the org
+      # base): a stale/revoked PAT must not break the public manifest clone
+      # that works anonymously. git picks the longest matching URL prefix;
+      # add a name to the loop if another private module appears.
       - name: Git auth for private west modules
         env:
           WEST_TOKEN: ${{ secrets.WEST_TOKEN }}
@@ -74,9 +74,11 @@ jobs:
             echo "WEST_TOKEN not set; public modules only."
             exit 0
           fi
-          git config --global \
-            url."https://x-access-token:${WEST_TOKEN}@github.com/nrfmodule/nrfmodule-core".insteadOf \
-            "https://github.com/nrfmodule/nrfmodule-core"
+          for repo in nrfmodule-core nrfmodule-sdk ncs-serial-modem; do
+            git config --global \
+              url."https://x-access-token:${WEST_TOKEN}@github.com/nrfmodule/${repo}".insteadOf \
+              "https://github.com/nrfmodule/${repo}"
+          done
 
       # Restore-only: caches live in the CALLER repo, and a caller that wants
       # hits runs a warm workflow on its default branch as the single writer
