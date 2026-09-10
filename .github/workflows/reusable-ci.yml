@@ -7,6 +7,13 @@ on:
         required: true
         type: string
         default: "tests"
+    secrets:
+      WEST_TOKEN:
+        description: >-
+          Fine-grained PAT (contents: read) with repo access to the private
+          west modules nrfmodule-sdk and ncs-serial-modem (the core itself is
+          the PR checkout). Callers pass `secrets: inherit`.
+        required: false
 
 jobs:
   run-tests:
@@ -23,6 +30,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: pr_code
+
+      # Same per-repo rewrite as reusable-build.yml; see the comment there.
+      - name: Git auth for private west modules
+        env:
+          WEST_TOKEN: ${{ secrets.WEST_TOKEN }}
+        run: |
+          if [ -z "$WEST_TOKEN" ]; then
+            echo "WEST_TOKEN not set; west update will fail on the private modules."
+            exit 0
+          fi
+          for repo in nrfmodule-core nrfmodule-sdk ncs-serial-modem; do
+            git config --global \
+              url."https://x-access-token:${WEST_TOKEN}@github.com/nrfmodule/${repo}".insteadOf \
+              "https://github.com/nrfmodule/${repo}"
+          done
 
       - name: Initialize West Workspace
         run: |
