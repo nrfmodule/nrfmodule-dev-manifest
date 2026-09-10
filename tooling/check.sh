@@ -83,6 +83,9 @@ bash "$CHECKS_DIR/no-ifdef-config.sh"        "${files[@]}" || fail=1
 bash "$CHECKS_DIR/paren-numeric-defines.sh"  "${files[@]}" || fail=1
 bash "$CHECKS_DIR/no-hardcoded-secrets.sh"   "${files[@]}" || fail=1
 bash "$CHECKS_DIR/complexity.sh"             "${files[@]}" || fail=1
+# cppcheck: ENFORCED where installed (CI lint, apt install cppcheck), skipped
+# with a notice elsewhere. No build dir needed.
+bash "$CHECKS_DIR/cppcheck.sh"               "${files[@]}" || fail=1
 
 # --- 2. clang-format — ADVISORY (reports drift, never blocks/reformats) -------
 # By design: it flags formatting that differs from the canonical style so we can
