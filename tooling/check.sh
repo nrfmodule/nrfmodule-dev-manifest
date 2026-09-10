@@ -114,6 +114,16 @@ case "$mode" in
 	--range) git diff "$range"  | bash "$CHECKS_DIR/added-comments.sh" ;;
 esac
 
+# --- 2c. em dashes in added comments — ENFORCED (diff-based) -----------------
+case "$mode" in
+	"")      git diff --cached  -- "${files[@]}" | bash "$CHECKS_DIR/no-em-dash.sh" || fail=1 ;;
+	--range) git diff "$range"  -- "${files[@]}" | bash "$CHECKS_DIR/no-em-dash.sh" || fail=1 ;;
+esac
+
+# --- 2d. clang-tidy — ADVISORY (needs a build dir compile database) ----------
+# bugprone + clang-analyzer on the checked files. TIDY_ENFORCE=1 makes it fail.
+bash "$CHECKS_DIR/clang-tidy.sh" "${files[@]}" || fail=1
+
 # --- 3. checkpatch (advisory; opt-in) ----------------------------------------
 if [ "${RUN_CHECKPATCH:-0}" = "1" ] && [ -n "${CHECKPATCH:-}" ]; then
 	echo "[checkpatch] advisory output:"
