@@ -74,7 +74,8 @@ jobs:
     runs-on: ${{ vars.NRFMODULE_CI_RUNNER || 'ubuntu-latest' }}
     container:
       # Use your custom image
-      image: ghcr.io/nrfmodule/nrfmodule-dev-manifest:latest
+      # Pinned to an immutable sha- tag (publish-docker.yml); bump on purpose.
+      image: ghcr.io/nrfmodule/nrfmodule-dev-manifest:sha-b60952fb63e7aeff46b6edf622df8fd8af16676b
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
