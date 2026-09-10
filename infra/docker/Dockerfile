@@ -36,6 +36,9 @@ RUN apt-get update && apt-get install -y \
     libsdl2-dev \
     libmagic1 \
     qemu-system-arm \
+    # static analysis for the quality gate (tooling/checks)
+    cppcheck \
+    clang-tidy \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Install the Zephyr SDK (Minimal Bundle)

@@ -12,6 +12,8 @@
 #
 # Env: TIDY_BUILD_DIR (dir holding compile_commands.json; default = first
 # match of build*/*/compile_commands.json or build*/compile_commands.json).
+# CI runs it enforced after the board build (reusable-build.yml clang-tidy
+# input) with the app image's database.
 #
 # Usage: clang-tidy.sh <file>...
 set -u
@@ -52,7 +54,8 @@ trap 'rm -rf "$tmp"' EXIT
 sed -E "s/$GCC_ONLY_FLAGS//g" "$db" > "$tmp/compile_commands.json"
 
 # Only files the database knows (unit-test mains and headers are not in the app DB).
-db_files="$(python -c "import json,sys;print('\n'.join(x['file'].replace('\\\\','/').lower() for x in json.load(open(sys.argv[1]))))" "$tmp/compile_commands.json")"
+PY="$(command -v python3 || command -v python)"
+db_files="$("$PY" -c "import json,sys;print('\n'.join(x['file'].replace('\\\\','/').lower() for x in json.load(open(sys.argv[1]))))" "$tmp/compile_commands.json")"
 hits=0; checked=0
 for f in "$@"; do
 	abs="$(cd "$(dirname "$f")" && pwd -W 2>/dev/null || pwd)/$(basename "$f")"

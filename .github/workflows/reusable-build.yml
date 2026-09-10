@@ -26,6 +26,13 @@ on:
         required: false
         type: string
         default: ""
+      # clang-tidy needs the compile database a build writes, so it lives
+      # here rather than in the PR lint. Enforced: findings fail the job.
+      clang-tidy:
+        description: Run clang-tidy (bugprone + analyzer) on the app sources after the build; findings fail the job.
+        required: false
+        type: boolean
+        default: false
       # Off by default: PR gates want the exit status, not binaries. Callers
       # that consume the files (release attach, bench flashing) set true.
       # require-artifacts also turns the upload on.
@@ -148,6 +155,17 @@ jobs:
             export "$kv"
           done
           west build -b ${{ inputs.board }} ../${{ inputs.app-dir }}
+
+      # The app image's database: sysbuild names the image dir after the app
+      # source dir's basename. MCUboot and other images are skipped.
+      - name: clang-tidy
+        if: ${{ inputs.clang-tidy }}
+        working-directory: ${{ inputs.app-dir }}
+        run: |
+          db=$(find ../workspace/build -maxdepth 2 -name compile_commands.json                -not -path '*mcuboot*' -not -path '*b0*' -not -path '*tfm*' | head -1)
+          [ -n "$db" ] || { echo "::error::no compile_commands.json under workspace/build"; exit 1; }
+          git clone -q --depth 1 https://github.com/nrfmodule/nrfmodule-dev-manifest /tmp/manifest
+          TIDY_ENFORCE=1 TIDY_BUILD_DIR="$(dirname "$db")"             bash /tmp/manifest/tooling/checks/clang-tidy.sh $(git ls-files '*.c')
 
       # --- Sanitize the Name ---
       # Either flag runs the artifact steps: require-artifacts alone used to
