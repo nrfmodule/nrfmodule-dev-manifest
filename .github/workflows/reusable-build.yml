@@ -10,6 +10,22 @@ on:
         required: false
         type: string
         default: "application"
+      # Space-separated KEY=VALUE pairs exported before west build. App
+      # CMake files read flavor switches from the environment (for example
+      # ACCEL_REC=y); this is the only way a caller can select one. The
+      # keys are logged; never route a secret through it.
+      build-env:
+        description: Space-separated KEY=VALUE pairs exported before west build (flavor switches).
+        required: false
+        type: string
+        default: ""
+      # Lets one caller upload several flavors of the same board without
+      # the artifact names colliding: firmware-<board><suffix>.
+      artifact-suffix:
+        description: Appended to the artifact name firmware-<board>, e.g. "-acc".
+        required: false
+        type: string
+        default: ""
       # Off by default: PR gates want the exit status, not binaries. Callers
       # that consume the files (release attach, bench flashing) set true.
       # require-artifacts also turns the upload on.
@@ -122,7 +138,13 @@ jobs:
 
       - name: Build Firmware
         working-directory: workspace
+        env:
+          BUILD_ENV: ${{ inputs.build-env }}
         run: |
+          for kv in $BUILD_ENV; do
+            echo "export ${kv%%=*}"
+            export "$kv"
+          done
           west build -b ${{ inputs.board }} ../${{ inputs.app-dir }}
 
       # --- Sanitize the Name ---
@@ -146,7 +168,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           # Use the sanitized output from the previous step
-          name: firmware-${{ steps.safe-name.outputs.board }}
+          name: firmware-${{ steps.safe-name.outputs.board }}${{ inputs.artifact-suffix }}
           if-no-files-found: ${{ inputs.require-artifacts && 'error' || 'warn' }}
           retention-days: ${{ inputs.retention-days }}
           path: |
