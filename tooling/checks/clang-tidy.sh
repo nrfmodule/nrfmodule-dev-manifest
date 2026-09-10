@@ -26,8 +26,10 @@ GCC_ONLY_FLAGS=' -fno-printf-return-value| -fno-reorder-functions| -mfp16-format
 
 find_tidy() {
 	command -v clang-tidy 2>/dev/null && return 0
-	[ -n "${APPDATA:-}" ] && [ -x "$APPDATA/Python/Python311/Scripts/clang-tidy.exe" ] \
-		&& { echo "$APPDATA/Python/Python311/Scripts/clang-tidy.exe"; return 0; }
+	# pip --user install on Windows lands in the per-version Scripts dir.
+	for exe in "${APPDATA:-/nonexistent}"/Python/Python3*/Scripts/clang-tidy.exe; do
+		[ -x "$exe" ] && { echo "$exe"; return 0; }
+	done
 	return 1
 }
 
