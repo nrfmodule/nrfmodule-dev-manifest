@@ -1,8 +1,12 @@
-# Start with a clean, small Ubuntu image
-FROM ubuntu:22.04
+# Ubuntu 24.04 ships Python 3.12; twister in NCS v3.4.0 needs datetime.UTC
+# (Python 3.11+) and 22.04 stops at 3.10.
+FROM ubuntu:24.04
 
 # Prevent interactive prompts during apt install
 ENV DEBIAN_FRONTEND=noninteractive
+# 24.04 pip refuses system-wide installs without this (PEP 668); the image
+# is single-purpose, no venv needed.
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # 1. Install System Dependencies (Git, CMake, Python, QEMU)
 # We install qemu-system-arm directly from Ubuntu repositories (It's smaller and works great)
