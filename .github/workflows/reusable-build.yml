@@ -134,14 +134,17 @@ jobs:
 
       - name: Initialize Workspace
         run: |
-          # A self-hosted runner keeps its work directory between jobs, so
-          # both the directory and the west init may already be there.
-          mkdir -p workspace
+          # A self-hosted runner keeps its work directory between jobs, and
+          # `west init -l` puts the topdir HERE, not in workspace/. Drop the
+          # stale west config so init is clean; leave the fetched module
+          # trees, which are what the cache restore is for.
+          rm -rf .west workspace
+          mkdir workspace
           cd workspace
 
           # Initialize from the App's own manifest (Bootstrap)
           # We point to the folder where we checked out the code
-          [ -d .west ] || west init -l ../${{ inputs.app-dir }}
+          west init -l ../${{ inputs.app-dir }}
           
           # Shallow, narrow fetch: a build needs the pinned revisions, not
           # history. Full clones are multi-GB, take 7 minutes and do not

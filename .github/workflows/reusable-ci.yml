@@ -49,13 +49,14 @@ jobs:
 
       - name: Initialize West Workspace
         run: |
-          # A self-hosted runner keeps its work directory between jobs, so
-          # both the directory and the west init may already be there.
-          mkdir -p workspace
+          # A self-hosted runner keeps its work directory between jobs, and a
+          # build job's topdir lands next to ours. Drop both so init is clean.
+          rm -rf .west workspace
+          mkdir workspace
           cd workspace
 
           # 1. Initialize with the platform manifest (NCS v3.4.0 + platform libs)
-          [ -d .west ] || west init -m https://github.com/nrfmodule/nrfmodule-dev-manifest
+          west init -m https://github.com/nrfmodule/nrfmodule-dev-manifest
 
           # 2. Skip the private core repo: the PR checkout replaces it below
           west config manifest.project-filter -- "-nrfmodule-core"
