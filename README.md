@@ -196,7 +196,7 @@ This repository hosts the Docker image and the reusable GitHub Actions workflows
 The org is on the GitHub free plan. Hosted minutes are limited. See the "Cost controls" section in [CLAUDE.md](CLAUDE.md) for the full rules. In short:
 *   Docs-only PRs skip the build and test jobs. The lint gate always runs.
 *   Product apps restore a cached west workspace. Only the caller repo's `west-cache-warm.yml` writes the cache.
-*   Set the org variable `NRFMODULE_CI_RUNNER` to one self-hosted runner label. `reusable-build.yml`, `reusable-lint.yml` and the tracker `ci.yml` and `west-cache-warm.yml` jobs then run there. `reusable-ci.yml`, `publish-docker.yml` and the tracker `release.yml` still hard-code `ubuntu-latest`.
+*   Set `NRFMODULE_CI_RUNNER` to one self-hosted runner label, as an org variable or as a repo variable per repo. `reusable-build.yml`, `reusable-ci.yml`, `reusable-lint.yml` and the tracker `ci.yml` and `west-cache-warm.yml` jobs then run there. `publish-docker.yml` and the tracker `release.yml` still hard-code `ubuntu-latest`. Keep the variable off public repos: a self-hosted runner there runs code from any fork PR.
 
 ## 7. FAQ
 
