@@ -140,6 +140,11 @@ jobs:
           # trees, which are what the cache restore is for.
           rm -rf .west workspace
           mkdir workspace
+          # The container runs as root; module trees left by an earlier job on
+          # a self-hosted runner may belong to the runner user, and git then
+          # refuses them as dubious ownership (west list fails, cmake reports
+          # "cannot import").
+          git config --global --add safe.directory '*'
           cd workspace
 
           # Initialize from the App's own manifest (Bootstrap)
