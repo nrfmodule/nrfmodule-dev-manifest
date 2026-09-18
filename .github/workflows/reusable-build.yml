@@ -136,9 +136,11 @@ jobs:
         run: |
           # A self-hosted runner keeps its work directory between jobs, and
           # `west init -l` puts the topdir HERE, not in workspace/. Drop the
-          # stale west config so init is clean; leave the fetched module
-          # trees, which are what the cache restore is for.
-          rm -rf .west workspace
+          # stale west config so init is clean. Keep the pinned module trees,
+          # which are what the cache restore is for, but drop the ones that
+          # track main: a tree left by an earlier job can hold untracked files
+          # the new commit tracks, and git then refuses the checkout.
+          rm -rf .west workspace modules/lib/nrfmodule-sdk modules/lib/nrfmodule-core config/manifest
           mkdir workspace
           # The container runs as root; module trees left by an earlier job on
           # a self-hosted runner may belong to the runner user, and git then
