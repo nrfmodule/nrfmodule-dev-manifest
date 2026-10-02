@@ -35,5 +35,12 @@ manifest:
       path: modules/lib/nrfmodule-core
       revision: main  # Latest development. Customers: use a tagged revision (e.g., v3.0.0)
 
+    # 5. LZ4 (log upload compression). Zephyr in NCS v3.4.0 lists it as an
+    # external module and no longer fetches it. Commit on its zephyr branch, bump on purpose.
+    - name: lz4
+      url: https://github.com/zephyrproject-rtos/lz4
+      revision: 0ad20d0fc4ec70d6f4c3d399357e59d0544cf07f
+      path: modules/lib/lz4
+
   self:
     path: config/manifest
