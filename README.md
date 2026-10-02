@@ -43,7 +43,8 @@ workspace/
 ├── modules/
 │   └── lib/
 │       ├── nrfmodule-core/  <-- PRIVATE SOURCE (Edit code here!)
-│       └── nrfmodule-sdk/   <-- PUBLIC WRAPPER
+│       ├── nrfmodule-sdk/   <-- PUBLIC WRAPPER
+│       └── lz4/             <-- LZ4 compression (Zephyr module, pinned commit)
 └── ...
 ```
 
