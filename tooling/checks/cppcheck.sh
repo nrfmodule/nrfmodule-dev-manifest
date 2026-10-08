@@ -5,7 +5,9 @@
 #
 # Only findings cppcheck is sure about (error + warning severities). Zephyr
 # and nrfx headers are not on the include path on purpose: without them the
-# run takes seconds, and unknown macros are tolerated.
+# run takes seconds, and unknown macros are tolerated. toomanyconfigs is a
+# notice about cppcheck's own 12-configuration cap on files with many
+# CONFIG_* blocks (a product main.c), not a code finding.
 #
 # Usage: cppcheck.sh <file>...
 set -u
@@ -22,7 +24,7 @@ out="$(cppcheck --quiet --error-exitcode=0 \
 	--enable=warning,performance,portability \
 	--inline-suppr \
 	--suppress=missingInclude --suppress=missingIncludeSystem \
-	--suppress=unknownMacro \
+	--suppress=unknownMacro --suppress=toomanyconfigs \
 	--template='{file}:{line}: [{id}] {message}' \
 	${inc[@]+"${inc[@]}"} "$@" 2>&1 | grep -E '^\S+:[0-9]+: \[' | sort -u)"
 
