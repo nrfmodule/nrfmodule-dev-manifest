@@ -88,7 +88,7 @@ We use **semantic versioning** independent of NCS versions. This gives us our ow
 
 | nRFModule Version | NCS Version | Branches | Status |
 |-------------------|-------------|----------|--------|
-| **v3.x** | **3.4.x** | `main` | ✅ **Active Development** (latest tag v3.0.0) |
+| **v3.x** | **3.4.x** | `main` | ✅ **Active Development** (latest tag v3.1.0) |
 | v2.x | 3.2.x | `v2.x` | 🧊 Frozen at v2.4.0 |
 | v1.x | 3.1.x | `legacy-ncs-v3.1` (manifest), `v1.x` (core, sdk) | 🔧 Legacy, critical fixes only |
 
@@ -167,7 +167,7 @@ manifest:
       url: https://github.com/nrfmodule/nrfmodule-sdk
       # Choose one of these revision strategies:
       
-      revision: v3.0.0  # 1. Pin to a release tag (most stable, recommended for production)
+      revision: v3.1.0  # 1. Pin to a release tag (most stable, recommended for production)
       # OR
       revision: main    # 2. Latest development on NCS 3.4.x
       # OR
@@ -176,7 +176,7 @@ manifest:
       revision: v1.x    # 4. Legacy NCS 3.1.x support (critical fixes only)
 ```
 
-**Recommendation:** Use `main` for active development. Pin to a release tag (e.g., `v3.0.0`) before a production release.
+**Recommendation:** Use `main` for active development. Pin to a release tag (e.g., `v3.1.0`) before a production release.
 
 ## 6. CI/CD & Docker
 
@@ -205,7 +205,7 @@ The org is on the GitHub free plan. Hosted minutes are limited. See the "Cost co
 A: Always create a feature branch. Never commit directly to `main`.
 
 **Q: Which version should customers use?**  
-A: For new projects on NCS 3.4.x, use `v3.0.0` or `main`. For NCS 3.2.x, use `v2.x` (frozen at v2.4.0). For NCS 3.1.x, use `v1.x`.
+A: For new projects on NCS 3.4.x, use `v3.1.0` or `main`. For NCS 3.2.x, use `v2.x` (frozen at v2.4.0). For NCS 3.1.x, use `v1.x`.
 
 **Q: How do I backport a fix to v1.x?**  
 A: Cherry-pick the commit to the `v1.x` branch on core and sdk (the manifest branch is `legacy-ncs-v3.1`) and tag as v1.0.1, v1.0.2, etc.
