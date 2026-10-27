@@ -123,6 +123,22 @@ case "$mode" in
 	--range) git diff "$range"  -- "${files[@]}" | bash "$CHECKS_DIR/no-em-dash.sh" || fail=1 ;;
 esac
 
+# --- 2c2. include direction — ADVISORY (whole repo, rules in include_rules/) --
+# Reports a module including a header its rules forbid, or a private header
+# of another module. INCLUDES_ENFORCE=1 makes it fail (CI, once clean).
+py_bin="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
+if [ -n "$py_bin" ]; then
+	repo_top="$(git rev-parse --show-toplevel 2>/dev/null)"
+	if [ -n "$repo_top" ] && { [ -d "$repo_top/src" ] || [ -d "$repo_top/lib" ]; }; then
+		inc_out="$("$py_bin" "$TOOLING_DIR/check_includes.py" "$repo_top" 2>&1)" || true
+		if ! echo "$inc_out" | grep -q '^0 include violations'; then
+			echo "── include direction ADVISORY ──"
+			echo "$inc_out" | sed 's/^/  /'
+			[ "${INCLUDES_ENFORCE:-0}" = "1" ] && fail=1
+		fi
+	fi
+fi
+
 # --- 2d. clang-tidy — ADVISORY (needs a build dir compile database) ----------
 # bugprone + clang-analyzer on the checked files. TIDY_ENFORCE=1 makes it fail.
 bash "$CHECKS_DIR/clang-tidy.sh" "${files[@]}" || fail=1
