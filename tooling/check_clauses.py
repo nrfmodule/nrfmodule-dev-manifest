@@ -64,7 +64,12 @@ def main():
         return 1 if a.strict else 0
 
     root = repo_root(a.contract)
-    dirs = a.tests or [os.path.join(root, "tests", "unit"), os.path.join(root, "tests", "hil")]
+    if a.tests:
+        dirs = a.tests
+    else:  # defaults: whichever of the two exists; a repo may have no HIL suite yet
+        dirs = [d for d in (os.path.join(root, "tests", "unit"), os.path.join(root, "tests", "hil")) if os.path.isdir(d)]
+        if not dirs:
+            sys.exit(f"no tests/unit or tests/hil under {root}; pass --tests")
     files = []
     for d in dirs:
         if not os.path.isdir(d):

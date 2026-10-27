@@ -1,0 +1,5 @@
+# Include-direction rules for the SDK, checked by tooling/check_includes.py.
+# Module = first directory under lib/. "A !-> B" forbids A from including B.
+# ADR 0006 (hub): the modem stack must not depend on a cloud or product layer.
+modem !-> avirings, cloud_client, adv_codec, led
+power !-> modem, avirings, cloud_client

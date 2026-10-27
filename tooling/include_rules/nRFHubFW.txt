@@ -1,0 +1,9 @@
+# Include-direction rules, checked by tooling/check_includes.py (advisory in
+# check.sh, --strict in CI once the list is clean). Module = first directory
+# under src/. "A !-> B, C" forbids A from including headers owned by B or C.
+# Built in, no line needed: *_internal.h and *_priv.h stay inside their module.
+
+# State machines know no wire formats and no storage (review rubric).
+state !-> data, collector, transport
+# Nothing includes main.
+* !-> main
