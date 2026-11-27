@@ -1,0 +1,18 @@
+# check_docs.py rules: <doc glob> skips a doc, <doc glob> <name> skips one name in it.
+docs/display_protocol.md  # describes the V1.22 firmware and the display firmware
+src/display/ugui/NOTICE.md  # provenance of code taken from V1.22
+tests/unit/test_display/golden/README.md  # provenance of the golden images
+.github/copilot-instructions.md child_image/mcuboot.conf  # described as not configured yet
+.github/copilot-instructions.md child_image/hci_rpmsg.conf
+docs/features/S0-adv-shared-header.md BeeScalesFirmware/src/application/beacon_handler.c  # V1.22 source
+docs/features/S1-board-pcb-v2.md BeeScalesFirmware/POWER_AUDIT.md
+docs/features/S8-rtc-max31343.md BeeScalesFirmware/src/time_service/rtc_driver/max31343/MAX31343.h
+docs/features/S5-display-renderer.md src/display/display.c  # V1.22 sources the renderer was ported from
+docs/features/S5-display-renderer.md src/display/logo_image.h
+docs/features/S5-display-renderer.md src/application/beescales_app.c
+docs/features/S5-display-renderer.md src/ble/ble_central/ble_central_epd.c
+docs/features/S5-display-renderer.md user_pixel_set_fn()
+docs/features/S10-weighing.md src/system/hx711_raw_shell.c  # listed as removed
+docs/features/S12-history-log.md hist_0.csv  # file names on the device
+docs/features/S12-history-log.md hist_6.csv
+docs/features/S12-history-log.md hist_8.csv
