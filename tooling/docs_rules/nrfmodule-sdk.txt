@@ -1,0 +1,5 @@
+# check_docs.py rules: <doc glob> skips a doc, <doc glob> <name> skips one name in it.
+.github/copilot-instructions.md workspace/modules/lib/nrfmodule-sdk/  # west top folder, not a repo path
+.github/copilot-instructions.md workspace/modules/lib/nrfmodule-core/
+docs/log_upload.md docs/file-controller-firmware.md  # a doc in the server repo
+tests/avirings/test_log_upload_vectors/vectors/README.md out/  # folder the decode command creates

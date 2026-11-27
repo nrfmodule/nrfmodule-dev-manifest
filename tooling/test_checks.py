@@ -73,17 +73,23 @@ with tempfile.TemporaryDirectory() as tmp:
 
     c = os.path.join(tmp, "repoC")
     write(c, "Kconfig", "config FOO\n\tbool \"foo\"\nmodule = BAR\n")
-    write(c, "src/foo.c", "int foo_init(void) { return CONFIG_VERSION_UNKNOWN; }\n")
+    write(c, "src/foo.c", "int foo_init(void) { return CONFIG_VERSION_UNKNOWN + EVT_CONFIG_CHANGED; }\n")
+    write(c, "docs/enum.md", "posts CONFIG_CHANGED\n")
+    write(c, "docs/legacy.md", "`src/old.c`\n")
+    write(c, "docs/b.md", "`workspace/x/` `src/b_gone.c`\n")
+    write(c, "rules.txt", "# comment\ndocs/legacy.md  # other codebase\ndocs/b.md workspace/x/\n")
     write(c, "docs/a.md", "CONFIG_FOO, CONFIG_GONE, CONFIG_BAR_LOG_LEVEL_DBG, CONFIG_VERSION_UNKNOWN\n"
           "`src/foo.c` `src/gone.c` `src/` `tracker/gps_int` `foo_init()` `gone_init()`\n"
           "```\n`src/fenced.c`\n```\n")
     write(c, "docs/field-tests/old.md", "`src/gone.c` CONFIG_GONE\n")
     subprocess.run(["git", "init", "-q", c], check=True)
     subprocess.run(["git", "-C", c, "add", "."], check=True)
-    rc, out = run("check_docs.py", c, "--ncs", tmp, "--also", c, "--strict")
+    rc, out = run("check_docs.py", c, "--ncs", tmp, "--also", c, "--rules", os.path.join(c, "rules.txt"), "--strict")
     assert rc == 1, out
     assert "a.md:1: kconfig CONFIG_GONE" in out and "path src/gone.c" in out and "gone_init()" in out, out
     assert "field-tests" not in out and "fenced" not in out and "gps_int" not in out, out
-    assert "3 doc drift findings" in out, out
+    assert "CONFIG_CHANGED" not in out, "an enum tail is not Kconfig: " + out
+    assert "legacy.md" not in out and "workspace/x/" not in out and "b.md:1: path src/b_gone.c" in out, out
+    assert "4 doc drift findings" in out and "2 rules" in out, out
 
 print("test_checks: ok")

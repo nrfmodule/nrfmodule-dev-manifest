@@ -1,0 +1,3 @@
+# check_docs.py rules: <doc glob> skips a doc, <doc glob> <name> skips one name in it.
+.github/copilot-instructions.md child_image/mcuboot.conf  # described as not configured yet
+.github/copilot-instructions.md child_image/hci_rpmsg.conf
